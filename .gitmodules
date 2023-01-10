@@ -1,0 +1,4 @@
+[submodule "hugo-PaperMod"]
+    path = themes/PaperMod
+    url = https://github.com/adityatelange/hugo-PaperMod.git
+    # tag = v6.0
