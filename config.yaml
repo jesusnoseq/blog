@@ -52,10 +52,14 @@ languages:
               name: Tags
               url: /tags/
               weight: 20
+            - identifier: about
+              name: About
+              url: /about/
+              weight: 30
             - identifier: search
               name: Search
               url: /search/
-              weight: 30
+              weight: 40
 
 params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
@@ -164,18 +168,14 @@ menu:
       name: Tags
       url: /tags/
       weight: 20
+    - identifier: about
+      name: Sobre mí
+      url: /about/
+      weight: 30
     - identifier: search
       name: Buscar
       url: /search/
-      weight: 30
-#     - identifier: tags
-#       name: tags
-#       url: /tags/
-#       weight: 20
-#     - identifier: example
-#       name: example.org
-#       url: https://example.org
-#       weight: 30
+      weight: 40
 
 privacy:
     vimeo:
