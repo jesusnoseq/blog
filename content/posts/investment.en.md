@@ -56,7 +56,8 @@ I have a few more sources in the Spanish post, but the audio is, of course, in S
   * The market tends to the extremes of fear and optimism. [More to read](https://www.investopedia.com/articles/trading/04/011404.asp)
 * Look what they do more than what they say
   * You can check where people like [Bill Wates](https://dataromas.com/bill-gates-portfolio/) or [Warren Buffet](https://dataromas.com/warren-buffet-portfolio/) put their money
-  * Sometimes news can try to make you think wrongly. Think about the interests of the person who wrote the article.
+  * Sometimes news is published with the intention of creating FUD or FOMO unnecessarily. Think about the interests of the person who wrote the article.
+* Keep track of each operation that you make. You are going to need it to pay taxes.
 * > Be fearful when others are greedy, and greedy when others are fearful.\
   > [Warren Buffett](https://www.investopedia.com/articles/investing/012116/warren-buffett-be-fearful-when-others-are-greedy.asp)
 * > Past performance is no guarantee of future results.\

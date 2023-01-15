@@ -34,6 +34,8 @@ En este post, quiero hacer una pequeña guía introductoria sobre la inversión 
 * Coste de oportunidad → Es el coste de las oportunidades perdidas
 * Volatilidad → variación del valor de un instrumento financiero a lo largo del tiempo.
 * [Investing VS Gambling](https://www.investopedia.com/articles/basics/09/compare-investing-gambling.asp) → Spoiler, los inversores ganan con el tiempo.
+* FUD → Fear, Uncertainty, Doubt
+* FOMO → Fear Of Missing Out
 
 ## Guias generales
 
@@ -59,7 +61,8 @@ En este post, quiero hacer una pequeña guía introductoria sobre la inversión 
 * Cuanto mayor seas, menos riesgos debes asumir.
 * Fíjate más en lo que hacen que en lo que dicen
   * Puedes comprobar dónde ponen su dinero personas como [Bill Wates](https://dataromas.com/bill-gates-portfolio/) o [Warren Buffet](https://dataromas.com/warren-buffet-portfolio/)
-  * A veces las noticias pueden intentar hacerte pensar mal. Piensa en los intereses de la persona que escribió el artículo.
+  * A veces las noticias se publican con la intención de crear FUD o FOMO innecesariamente. Piensa en los intereses de la persona que escribió el artículo.
+* Lleva un registro de cada operación que realices. Lo vas a necesitar para pagar impuestos.
 * > Sé temeroso cuando los demás son avariciosos, y avaricioso cuando los demás son temerosos.\
   > [Warren Buffett](https://www.investopedia.com/articles/investing/012116/warren-buffett-be-fearful-when-others-are-greedy.asp)
 * > El rendimiento pasado no es garantía de resultados futuros.\
