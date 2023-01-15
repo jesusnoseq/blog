@@ -34,8 +34,8 @@ En este post, quiero hacer una pequeña guía introductoria sobre la inversión 
 * Coste de oportunidad → Es el coste de las oportunidades perdidas
 * Volatilidad → variación del valor de un instrumento financiero a lo largo del tiempo.
 * [Investing VS Gambling](https://www.investopedia.com/articles/basics/09/compare-investing-gambling.asp) → Spoiler, los inversores ganan con el tiempo.
-* FUD → Fear, Uncertainty, Doubt
-* FOMO → Fear Of Missing Out
+* FUD (Fear, Uncertainty, Doubt) → difusión intencionada de información negativa para manipular el precio de un activo
+* FOMO (Fear Of Missing Out) → miedo a no participar en una oportunidad de inversión
 
 ## Guias generales
 

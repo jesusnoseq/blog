@@ -31,6 +31,8 @@ I have a few more sources in the Spanish post, but the audio is, of course, in S
 * Opportunity cost → It's the cost of the foregone opportunities
 * Volatility → variation of a financial instrument's value over time
 * [Investing VS Gambling](https://www.investopedia.com/articles/basics/09/compare-investing-gambling.asp) → Spoiler, investors win over time.
+* FUD (Fear, Uncertainty, Doubt) → intentional spreading of negative information to manipulate the price of an asset
+* FOMO (Fear Of Missing Out) → fear of not participating in an investment opportunity
 
 ## ## General guidelines
 
