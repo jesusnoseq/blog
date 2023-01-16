@@ -74,6 +74,7 @@ En este post, quiero hacer una pequeña guía introductoria sobre la inversión 
 Hay muchas opciones para invertir.
 Aquí enumero las más comunes [^risky]
 
+* Depositos bancarios / Cuentas remuneradas
 * Deuda soberana
 * Inmuebles
 * ETFs

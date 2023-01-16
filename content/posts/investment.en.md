@@ -71,6 +71,7 @@ I have a few more sources in the Spanish post, but the audio is, of course, in S
 There are many options for investment.
 Here I list the most common ones [^risky]
 
+* Bank deposits / Interest-bearing accounts
 * Sovereign debt
 * Real state
 * ETFs
