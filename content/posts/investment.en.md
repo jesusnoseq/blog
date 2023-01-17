@@ -13,13 +13,6 @@ At the beginning of 2020, I started to get interested in investing again by watc
 
 In this post, I want to make a small introductory guide to investing with what I have been able to learn so far and what I would have liked to know much earlier.
 
-## Some sources of information that I use
-
-* [principlesbyraydalio](https://www.youtube.com/@principlesbyraydalio)
-* [VisualEconomik](https://www.youtube.com/channel/UCPx_VO-AHXUDf9pwVy5bf1A)
-
-I have a few more sources in the Spanish post, but the audio is, of course, in Spanish.
-
 ## Concepts
 
 * Compound Interest → interest earned on the initial principal, as well as any accumulated interest from previous periods
@@ -33,8 +26,9 @@ I have a few more sources in the Spanish post, but the audio is, of course, in S
 * [Investing VS Gambling](https://www.investopedia.com/articles/basics/09/compare-investing-gambling.asp) → Spoiler, investors win over time.
 * FUD (Fear, Uncertainty, Doubt) → intentional spreading of negative information to manipulate the price of an asset
 * FOMO (Fear Of Missing Out) → fear of not participating in an investment opportunity
+* Operation: buy or sell of some investment asset. For example: buy 10 shares of Microsoft.
 
-## ## General guidelines
+## General guidelines
 
 * Inflation eats your money
 * Have a strategy
@@ -57,7 +51,7 @@ I have a few more sources in the Spanish post, but the audio is, of course, in S
   * This can be a little hard to properly understand, so [READ](https://www.investopedia.com/terms/d/discounting-mechanism.asp)
   * The market tends to the extremes of fear and optimism. [More to read](https://www.investopedia.com/articles/trading/04/011404.asp)
 * Look what they do more than what they say
-  * You can check where people like [Bill Wates](https://dataromas.com/bill-gates-portfolio/) or [Warren Buffet](https://dataromas.com/warren-buffet-portfolio/) put their money
+  * You can check where people like [Bill Gates](https://dataromas.com/bill-gates-portfolio/) or [Warren Buffet](https://dataromas.com/warren-buffet-portfolio/) put their money
   * Sometimes news is published with the intention of creating FUD or FOMO unnecessarily. Think about the interests of the person who wrote the article.
 * Keep track of each operation that you make. You are going to need it to pay taxes.
 * > Be fearful when others are greedy, and greedy when others are fearful.\
@@ -93,10 +87,18 @@ Here I list the most common ones [^risky]
   * Safe investments with high returns
   * Comments in social platforms and emails are infected by scams. Be careful!
 
-___
+## Some sources of information that I use
 
-All this said, I'm not a professional investor or anything similar.
-I just see the poor economic culture around me, and I think I can contribute to demystifying some myths and making people more aware of how money works and how to protect its savings.
+* [Principles by Ray Dalio](https://www.youtube.com/@principlesbyraydalio)
+* [VisualEconomik](https://www.youtube.com/channel/UCPx_VO-AHXUDf9pwVy5bf1A)
+
+I have a few more sources in the Spanish post, but the audio is, of course, in Spanish.
+
+## I would like to add
+
+I'm not a professional investor or anything similar.
+I believe, I can contribute by explaining basic concepts in a simple way, and help people become more aware of how money works to protect their savings.
+
 
 [^cbgob]: Depends on the country this could be true or less true.
 
