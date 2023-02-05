@@ -1,7 +1,7 @@
 
 ---
 title: "Sobre inversiones y dinero"
-date: 2023-01-13T22:49:34+01:00
+date: 2023-01-14T11:49:34+01:00
 draft: false
 tags: ["gestión", "dinero", "inversión"]
 categories: ["blog"]
