@@ -1,6 +1,6 @@
 ---
 title: "Gestion y control del tiempo"
-date: 2023-01-13T22:49:34+01:00
+date: 2023-01-21T22:49:34+01:00
 draft: false
 tags: ["gestion", "tiempo"]
 ---
