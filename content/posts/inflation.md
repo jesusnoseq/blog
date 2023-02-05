@@ -11,7 +11,7 @@ tags: ["economia", "inflación"]
 
 ## Inflación
 
-Como a sospecharas de [este post](https://jesusnoseq.com/en/posts/investment/), la inflación no es buena para nuestro dinero fiduciario.
+Como ya sospecharas de [este post](https://jesusnoseq.com/en/posts/investment/), la inflación no es buena para nuestro dinero fiduciario.
 
 Una definición de libro
 > La inflación se debe a un aumento generalizado y sostenido en los precios de los bienes y servicios en una economía.
