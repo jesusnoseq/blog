@@ -9,7 +9,7 @@ tags: ["economia", "inflación"]
 
 * Aprender qué es la inflación y cómo obtener datos relacionados
 
-## Inflation
+## Inflación
 
 Como a sospecharas de [este post](https://jesusnoseq.com/en/posts/investment/), la inflación no es buena para nuestro dinero fiduciario.
 
