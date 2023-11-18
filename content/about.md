@@ -8,7 +8,7 @@ draft: false
 
 Me gusta hacer experimentos.
 
-Mi objetivo es aprender tecnologías útiles y ayudar a los demás.
+Mi objetivo es aprender tecnologías útiles para hacer la vida mas facíl a todo el mundo y especialmente a desarrolladores.
 
 ### Intereses
 
@@ -16,9 +16,10 @@ Mi objetivo es aprender tecnologías útiles y ayudar a los demás.
 * Videojuegos
 * Desarrollo Web
 
-### Preferred technologies
+### Tecnologías principales
 
 * Go
 * Docker
 * AWS
-* Unity
+* Godot
+* Python

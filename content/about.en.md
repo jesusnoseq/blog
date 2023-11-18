@@ -8,7 +8,7 @@ draft: false
 
 I like doing experiments.
 
-My goal is to learn about useful technologies and help others.
+My goal is to learn useful technologies to make life easier for everyone and especially for developers.
 
 ### Interests
 
@@ -21,4 +21,5 @@ My goal is to learn about useful technologies and help others.
 * Go
 * Docker
 * AWS
-* Unity
+* Godot
+* Python
