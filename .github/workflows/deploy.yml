@@ -1,0 +1,29 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'v0.123.1'
+
+      - name: Build with Hugo
+        run: hugo --minify
+
+      - name: Deploy public folder to jesusnoseq.github.io
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.PUBLISH_BLOG_TOKEN }}
+          publish_dir: ./public
+          external_repository: jesusnoseq/jesusnoseq.github.io
+          publish_branch: main
