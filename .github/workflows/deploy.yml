@@ -26,7 +26,7 @@ jobs:
       - name: Deploy public folder to jesusnoseq.github.io
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.PUBLISH_BLOG_TOKEN }}
+          personal_token: ${{ secrets.PUBLISH_BLOG_TOKEN }}
           publish_dir: ./public
           external_repository: jesusnoseq/jesusnoseq.github.io
           publish_branch: main
