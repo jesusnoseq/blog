@@ -30,21 +30,21 @@ Es mi primera aplicación con React, y para desarrollarla me ayudé de [V0.dev](
 
 Para empezar a usarlo, simplemente pulsa en el botón "create new inbox" y tendrás disponible un endpoint al que enviar y registrar peticiones HTTP.
 
-![request inbox home page](/static/images/request-inbox-home.png)
+![request inbox home page](/images/request-inbox-home.png)
 
 Una vez creado el "inbox", verás qué endpoint tienes disponible.
 Las peticiones al endpoint indicado se registrarán en la aplicación.
 En esta página puedes habilitar la actualización automática de peticiones y editar la respuesta.
 
-![request inbox inbox page](/static/images/request-inbox-inbox.png)
+![request inbox inbox page](/images/request-inbox-inbox.png)
 
 Puedes hacer, por ejemplo, lo siguiente:
 
-![request inbox inbox editing](/static/images/request-inbox-inbox-editing.png)
+![request inbox inbox editing](/images/request-inbox-inbox-editing.png)
 
 Y si accedes a la URL que se indica, la aplicación registrará la petición y enviará la respuesta.
 
-![request inbox home](/static/images/request-inbox-request-receive.png)
+![request inbox home](/images/request-inbox-request-receive.png)
 
 Una vez recibida la request, podrás inspeccionarla cómodamente.
 

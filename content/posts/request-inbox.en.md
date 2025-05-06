@@ -30,21 +30,21 @@ This is my first application with React, and I used [V0.dev](https://v0.dev/) to
 
 To get started, simply click the "create new inbox" button and you will have an endpoint available to send and log HTTP requests.
 
-![request inbox home page](/static/images/request-inbox-home.png)
+![request inbox home page](/images/request-inbox-home.png)
 
 Once the inbox is created, you will see which endpoint is available.
 Requests sent to the indicated endpoint will be logged in the application.
 On this page, you can enable automatic request updates and edit the response.
 
-![request inbox inbox page](/static/images/request-inbox-inbox.png)
+![request inbox inbox page](/images/request-inbox-inbox.png)
 
 For example, you can do the following:
 
-![request inbox inbox editing](/static/images/request-inbox-inbox-editing.png)
+![request inbox inbox editing](/images/request-inbox-inbox-editing.png)
 
 And if you access the indicated URL, the application will log the request and send the response.
 
-![request inbox home](/static/images/request-inbox-request-receive.png)
+![request inbox home](/images/request-inbox-request-receive.png)
 
 Once the request is received, you can conveniently inspect it.
 
