@@ -1,4 +1,3 @@
-
 ---
 title: "About investments and money"
 date: 2023-01-14T22:49:34+01:00

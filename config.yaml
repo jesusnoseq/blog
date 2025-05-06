@@ -1,12 +1,15 @@
-# module:
-#   imports:
-#   - path: github.com/adityatelange/hugo-PaperMod
+module:
+  imports:
+  - path: github.com/adityatelange/hugo-PaperMod
+
 
 baseURL: "https://jesusnoseq.com/"
 languageCode: "es-es"
 title: "Jesusnoseq"
-paginate: 5
-theme: "hugo-PaperMod"
+pagination:
+  pagerSize: 5
+theme: ["PaperMod"]
+
 
 defaultContentLanguage: "es"
 
@@ -19,7 +22,7 @@ buildExpired: false
 enableEmoji: true
 pygmentsUseClasses: true
 
-googleAnalytics: UA-35417943-1 #G-C39J2T7ZKY
+googleAnalytics: G-C39J2T7ZKY
 
 minify:
   disableXML: true
@@ -64,8 +67,8 @@ languages:
 params:
   env: production # to enable google analytics, opengraph, twitter-cards and schema.
   title: Jesusnoseq
-  description: "Ingeniero de software especializado en back end"
-  keywords: [Blog, Profile, Portfolio, Development, Software, Golang, back end, AWS]
+  description: "Ingeniero de software especializado en backend"
+  keywords: [Blog, Profile, Portfolio, Development, Software, Golang, backend, AWS, Python]
   author: jesusnoseq
   defaultTheme: auto # dark, light
   disableThemeToggle: false
@@ -181,16 +184,15 @@ privacy:
     vimeo:
         disabled: false
         simple: true
-    twitter:
-        disabled: false
-        enableDNT: true
-        simple: true
     instagram:
         disabled: false
         simple: true
     youtube:
         disabled: false
         privacyEnhanced: true
+    x:
+        enableDNT: true
+        simple: true
 
 # Read: https://github.com/adityatelange/hugo-PaperMod/wiki/FAQs#using-hugos-syntax-highlighter-chroma
 pygmentsUseClasses: true

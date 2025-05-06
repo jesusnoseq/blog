@@ -1,8 +1,9 @@
 ---
 title: "Request Inbox"
-date: 2025-05-21T21:49:34+02:00
+date: 2025-05-06T12:00:00+00:00
 draft: false
 tags: ["side project", "web application"]
+categories: ["blog"]
 ---
 
 ## Request Inbox

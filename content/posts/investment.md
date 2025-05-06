@@ -1,4 +1,3 @@
-
 ---
 title: "Sobre inversiones y dinero"
 date: 2023-01-14T11:49:34+01:00
