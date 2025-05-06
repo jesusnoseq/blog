@@ -8,3 +8,6 @@
 [submodule "themes/LucentLink-Hugo"]
 	path = themes/LucentLink-Hugo
 	url = https://github.com/cx48/LucentLink-Hugo
+[submodule "themes/PaperMod"]
+	path = themes/PaperMod
+	url = https://github.com/adityatelange/hugo-PaperMod.git
