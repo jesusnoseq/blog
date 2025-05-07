@@ -29,4 +29,4 @@ jobs:
           personal_token: ${{ secrets.PUBLISH_BLOG_TOKEN }}
           publish_dir: ./public
           external_repository: jesusnoseq/jesusnoseq.github.io
-          publish_branch: main
+          publish_branch: master
