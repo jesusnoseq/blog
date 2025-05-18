@@ -6,8 +6,6 @@ tags: ["software", "videojuegos"]
 categories: ["blog"]
 ---
 
-## ¿Son los videojuegos las catedrales del siglo 21?
-
 Desde hace tiempo me llama la atención el escaso reconocimiento que recibe el videojuego fuera del ámbito “gamer”. No creo que este desconocimiento sea fruto de un menosprecio deliberado, sino, más bien, de la falta de información. Para ayudar a que se valore el ingente esfuerzo que supone crear un videojuego, he pensado en una analogía con algo mucho más tangible y físico.
 
 En este post compararemos las horas de trabajo estimadas para desarrollar un videojuego con las que históricamente se han invertido en la construcción de catedrales, rascacielos y pirámides.

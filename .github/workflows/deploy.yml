@@ -30,3 +30,4 @@ jobs:
           publish_dir: ./public
           external_repository: jesusnoseq/jesusnoseq.github.io
           publish_branch: master
+          cname: jesusnoseq.com

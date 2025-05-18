@@ -1,12 +1,10 @@
 ---
-title: "Are videogames the pyramids of the 21st century?"
+title: "Are videogames the cathedrals of the 21st century?"
 date: 2025-05-10T12:00:00+00:00
 draft: false
 tags: ["software", "videogames"]
 categories: ["blog"]
 ---
-
-## Are videogames the cathedrals of the 21st century?
 
 For some time now, I've been intrigued by the scant recognition that videogames receive outside the ‘gamer’ realm. I don't believe this lack of recognition is due to deliberate disregard, but rather a shortage of information. To help appreciate the enormous effort involved in creating a videogame, I've devised an analogy with something much more tangible and physical.
 
