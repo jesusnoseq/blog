@@ -85,4 +85,9 @@ If BTC drops approximately 40%, they liquidate whoever requested the loan, unles
 
 There are more platforms of this type, but this is the only one that allows exiting the investment easily.
 
+## Private Equity
+
+This type of investment typically yields returns of 15-20% and was limited to people with large estates, as the minimum ticket can be between €50,000 or even several million euros. Now, platforms are starting to emerge that significantly lower the initial capital required to enter, with the platform acting as an intermediary.
+I'll dedicate a separate post to this later, as this type of investment can be somewhat more complex, and whenever we invest, we need to understand what we're getting into.
+
 *Remember: always do your own research and never invest more than you're willing to lose.*
