@@ -44,7 +44,7 @@ En este post, quiero hacer una pequeña guía introductoria sobre la inversión 
 * No invierta en exceso
   * Invierte sólo el dinero que no vayas a necesitar
   * No inviertas todo tu dinero, guarda en el banco lo suficiente para vivir 6 meses sin ingresos
-  * Evite el apalancamiento
+  * Evita el apalancamiento, especialmente en exchanges, te pueden liquizar sin esperarlo.
 * El mercado descuenta futuros eventos potenciales en el precio.
   * Esto puede ser un poco difícil de entender correctamente, así que [lee](https://www.investopedia.com/terms/d/discounting-mechanism.asp)
   * El mercado tiende a los extremos del miedo y el optimismo. [Más para leer](https://www.investopedia.com/articles/trading/04/011404.asp)

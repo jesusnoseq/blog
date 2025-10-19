@@ -36,4 +36,4 @@ Para ilustrar esta comparación, he creado una tabla —con ayuda de la IA— do
 | The Last Guardian                        | Videojuego | 0.9                        | 9 (2007–2016)       | ≈\$100 M                            | 50                           | Desarrollo problemático; transición PS3→PS4; salida del director de Sony.                                     |
 | World of Warcraft                       | Videojuego | 0.4                        | 5 (1999–2004)       | ≈\$150 M                            | 40–80                        | MMORPG pionero; equipo inicial \~40–80 devs; presupuesto \~\$80 M (2004) ajustado a 2024.                   |
 
-Espero que después de leer este post puedas entender por qué, para mí, el octavo arte es el definitivo... al menos hasta que lleguen los braindance de Cyberpunk 2077.
+Espero que este post te resultara util para ver con algo mas de perspectiva el mundo de los videojuegos. Para mí, el octavo arte es el definitivo... al menos hasta que lleguen los braindance de Cyberpunk 2077.
