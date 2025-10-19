@@ -1,6 +1,6 @@
 ---
 title: "Alternative Investments"
-date: 2023-01-14T11:49:34+01:00
+date: 2025-10-18T23:49:34+01:00
 draft: false
 tags: ["economy", "money", "investment"]
 categories: ["blog"]

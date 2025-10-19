@@ -1,7 +1,7 @@
 
 ---
 title: "Inversiones alternativas"
-date: 2023-01-14T11:49:34+01:00
+date: 2025-10-18T23:49:34+01:00
 draft: false
 tags: ["economy", "dinero", "inversión"]
 categories: ["blog"]
