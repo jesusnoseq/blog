@@ -84,8 +84,13 @@ Si BTC baja aproximadamente un 40%, liquidan al que pidió el préstamo, a menos
 
 ## Minería de Bitcoin
 
-**[Everminer](https://everminer.io/)** – Podemos comprar terahashes de mineros de BTC que nos darán una rentabilidad. 
+**[Everminer](https://everminer.io/)** – Podemos comprar terahashes de mineros de BTC que nos darán una rentabilidad.
 
 Hay más plataformas de este tipo, pero esta es la única que permite salir de la inversión con facilidad.
+
+## Private Equity
+
+Este tipo de inversiones suelen tener rentabilidades del 15-20% y estaban limitadas a personas con grandes patrimonios ya que el ticket mínimo puede estar entre los 50.000€ o incluso varios millones de euros. Ahora están empezando a surgir aplicaciones donde se baja mucho el dinero inicial necesario para entrar, la plataforma hace intermediario.
+Le dedicaré su propio post más adelante, este tipo de inversiones pueden ser algo mas complejas y siempre que invertamos tenemos que entender donde nos estamos metiendo.
 
 *Recuerda: investiga siempre por tu cuenta y nunca inviertas más de lo que estés dispuesto a perder.*
