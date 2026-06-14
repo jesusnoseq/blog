@@ -6,7 +6,7 @@ tags: ["AI", "money", "investment", "dev"]
 categories: ["blog"]
 ---
 
-Llevamos con la IA generativa ya un tiempo y desde entonces es común comentar
+Llevamos ya un tiempo con la IA generativa y desde entonces es común comentar
 con mis compañeros de profesión como avanzan los LLMs en programación Agéntica.
 Me preguntan mucho y yo también voy preguntando a cada persona que me encuentro,
 por algún casual solo suelo conocer personas del sector, como usan la IA, si sus
@@ -25,7 +25,7 @@ En mi opinión, lo mejor es no casarse con ninguna compañía o modelo e ir surf
 
 Mirando un ranking de modelos <https://www.vals.ai/benchmarks/swebench> podemos ver que los modelos TOP, y más caros, son los de Claude de Anthropic, GPT de OpenAI y Gemini de Google.
 Después vendrían los modelos de empresas chinas como GLM, DeepSeek, MiMo, MiniMax o Qwen a precios más reducidos.
-Para que nos hagamos una idea, los modelos chinos suelen ir algo por detrás de los modelos punteros de Anthropic y OpenAI, ¿Pueden ser en parte, versiones destiladas de otros modelos mejores?
+Para que nos hagamos una idea, los modelos chinos suelen ir algo por detrás de los modelos punteros de Anthropic y OpenAI, ¿Pueden ser en parte versiones destiladas de otros modelos mejores? Es posible, aunque también cabe pensar que la competencia empuja a todos a mejorar rápido.
 
 En mi experiencia, cualquier modelo que supere aproximadamente el 70 % en SWE-bench ya ofrece una experiencia de programación cómoda en modo Agente.
 Obviamente a más potente sea el modelo mejor, podremos dejarle escribir tareas más extensas
@@ -50,7 +50,7 @@ Dentro de esta categoría tenemos. Muchos tienen una capa gratuita para uso Agé
 
 ### CLI
 
-Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes funcionan mejor de esta forma.
+Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes funcionan mejor de esta forma, quizá porque el entorno de texto plano elimina la distracción de una interfaz gráfica y obliga a expresar las instrucciones con mayor precisión.
 
 * **Claude Code** → CLI de Anthropic para programar. Es de las más utilizadas. Es compatible con terceros.
 * **GitHub CLI** → De Microsoft
@@ -62,7 +62,7 @@ Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes func
 
 Desde hace unos meses las suscripciones de IA vienen subiendo de precio y/o reduciendo quota de forma drástica.
 Justo este mes, junio de 2026, han cambiado las condiciones y la suscripción de GitHub Copilot que venía usando.
-Ha pasado de ser la mejor calidad precio a la peor. Ahora estoy probando OpenCode Go, no creo que gaste la quota.
+Ha pasado de ser la mejor calidad precio a la peor. Ahora estoy probando OpenCode Go, no creo que llegue a agotar la cuota.
 
 ### Suscripciones de entrada
 
@@ -70,12 +70,12 @@ La tabla muestra el plan mínimo que incluye acceso a agentes de código
 
 | Servicio           | Plan         | Precio (€/mes) | Tipo                       | Quota* | Observaciones |
 |--------------------|--------------|----------------|----------------------------|--------|------------------------------------------------|
-| Claude (Anthropic) | Pro          | 20€            | Web + Desktop + CLI        | Justa  | No reutilizable desde herramientas de terceros |
-| ChatGPT (OpenAI)   | Plus         | 20€            | Web + IDE Extensions + CLI | Justa  | No reutilizable desde herramientas de terceros |
+| Claude (Anthropic) | Pro          | 20€            | Web + Desktop + CLI        | Justa  | No compatible con herramientas de terceros   |
+| ChatGPT (OpenAI)   | Plus         | 20€            | Web + IDE Extensions + CLI | Justa  | No compatible con herramientas de terceros   |
 | GitHub Copilot     | Pro          | 10€            | IDE + CLI                  | No     | Ligada a VSC. Incluye autocompletados y revisión de código en GitHub |
 | Cursor             | Pro          | 20€            | IDE                        | Justa  | Modo agente con buena integración con su IDE |
 | OpenCode Go        | Go           | 10€            | CLI + Desktop + API        | Sí     | $5 el primer mes. Modelos open source (GLM-5.1, DeepSeek V4, etc) |
-| Trae               | Pro          | 10€            | IDE                        | Justa  | No reutilizable desde herramientas de terceros |
+| Trae               | Pro          | 10€            | IDE                        | Justa  | No compatible con herramientas de terceros   |
 | Devin Desktop      | Pro          | 20€            | IDE                        | No     | Antes Windsurf |
 | Google AI Plus     | Plus         | 22€            | API + Jules + Antigravity  | Justa  | Incluye Jules y Antigravity |
 
@@ -88,7 +88,7 @@ También hay servicios que ofrecen una cantidad bastante limitada de peticiones/
 * Las condiciones cambian, no compres una suscripción anual.
 * Intenta hacer tu proyecto agnóstico del modelo y del IDE que uses.
 * Para uso local, 16 GB de VRAM ya permiten trabajar con modelos interesantes
-* Cuidado con los nuevos vectores y superficie de ataque. Las skills, pese a generar un fichero Markdown, pueden ser peligrosas. Las dependencias también.
+* Cuidado con los nuevos vectores y superficie de ataque. Las skills, pese a generar un fichero Markdown, pueden ser peligrosas. Las dependencias también pueden serlo.
 * Es muy cómodo usar siempre el modelo más potente pero es caro. Ajusta el modelo a la tarea
-* Si quieres aprender algo, yo directamente intentaría empezar a hacer con ayuda de una buena suscripción de IA en vez de comprar un curso, especialmente si es muy caro o largo.
+* Si quieres aprender algo, yo directamente intentaría empezar a construirlo con ayuda de una buena suscripción de IA en vez de comprar un curso, especialmente si es muy caro o largo.
 * Es posible que el precio de los modelos frontera siga subiendo pero los precios de los modelos que actualmente hacen un buen papel generando código bajen.
