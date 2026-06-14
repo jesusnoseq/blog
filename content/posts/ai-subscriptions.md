@@ -32,6 +32,29 @@ Obviamente a mas potente sea el modelo mejor, podremos dejarle escribir tareas m
 con menos errors. Notece el uso de "dejarle escribir" y no usar otros verbos como confiar, delegar, dejarle hacer. A mayor sea la tarea mayor la "deuda cognitiva" y mas dificil se hace el revisar el código en detalle.
 Mi forma de trabajar hasta ahora es intentar darle al agente tareas cortas lo mas acotadas posibles y revisar cada linea cambiada. Tambien lo uso mucho para revisar codigo y detectar posibles problemas.
 
+
+## Herramientas Agenticas
+
+### IDE
+
+Simplemente la IA integrada en el ID, tienes una ventana/panel de chat donde preguntas y vas pidiendo cambios y los ves reflejados en el editor.
+
+Dentro de esta categoría tenemos
+
+* Visual Studio Code (VSC) → 
+* Cursor → 
+* Windsurf → 
+* Trae → 
+
+### CLI
+
+Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes funcionan mejor de esta forma.
+
+* Claude Code → 
+* OpenCode → 
+* Github CLI → 
+* Crush → 
+
 ## Subscripciones
 
 Claude
@@ -41,13 +64,6 @@ Opencode
 Github Copilot
 Trae
 
-## Herramientas
-
-### CLI
-
-### IDE
-
-### Otros inventos
 
 ## Reflexiones
 
