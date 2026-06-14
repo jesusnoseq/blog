@@ -1,7 +1,7 @@
 ---
-title: "Suscripciones de IA for DEVs"
-date: 2026-06-18T23:55:34+01:00
-draft: true
+title: "Suscripciones de IA para desarrolladores"
+date: 2026-06-14T23:55:34+01:00
+draft: false
 tags: ["AI", "money", "investment", "dev"]
 categories: ["blog"]
 ---
@@ -79,7 +79,7 @@ La tabla muestra el plan mínimo que incluye acceso a agentes de código
 | Devin Desktop      | Pro          | 20€            | IDE                        | No     | Antes Windsurf |
 | Google AI Plus     | Plus         | 22€            | API + Jules + Antigravity  | Justa  | Incluye Jules y Antigravity |
 
-* Quota: La suscripción incluye suficientes tokens/peticiones como para que un desarrollador pueda usarla durante un mes sin agotarla por completo
+\* Quota: La suscripción incluye suficientes tokens/peticiones como para que un desarrollador pueda usarla durante un mes sin agotarla por completo
 
 También hay servicios que ofrecen una cantidad bastante limitada de peticiones/tokens de forma gratuita. No he visto ninguno de estos servicios que digan que no vayan a usar los datos para sus propios fines. Mucho cuidado con los ficheros .env
 
