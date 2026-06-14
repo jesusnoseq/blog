@@ -36,30 +36,31 @@ Mi forma de trabajar hasta ahora es intentar darle al agente tareas cortas lo ma
 
 ### IDE
 
-Simplemente la IA integrada en el ID, tienes una ventana/panel de chat donde preguntas y vas pidiendo cambios y los ves reflejados en el editor.
+Simplemente la IA integrada en el IDE, tienes una ventana/panel de chat donde preguntas y vas pidiendo cambios y los ves reflejados en el editor.
 
 Dentro de esta categoría tenemos
 
-* Visual Studio Code (VSC) → 
-* Cursor → 
-* Devin Desktop (ex-Windsurf) → 
-* Trae → 
+* **Visual Studio Code (VSC)** → Con GitHub Copilot extension tienes agent mode, CLI y multiples modelos. Free con limites, Pro $10/mes
+* **Cursor** → Fork de VSC con IA nativa. Modo agente muy pulido, cloud agents, Bugbot para code review. Pro $20/mes, Teams $40/user/mes
+* **Codex** → De OpenAI. IDE en la web para que el agente trabaje de forma autonoma en tareas de coding. Incluido en ChatGPT Plus ($20/mes) con uso expandido
+* **Devin Desktop (ex-Windsurf)** → De Cognition. Antes Windsurf. Agentes cloud, modelo SWE 1.6 propio. Free con limites, Pro $20/mes, Max $200/mes
+* **Trae** → De ByteDance. Modo SOLO (agente agil). Free con limites, Pro $10/mes, Pro+ $30/mes, Ultra $100/mes
 
 ### CLI
 
 Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes funcionan mejor de esta forma.
 
-* Claude Code → 
-* OpenCode → 
-* Github CLI → 
-* Crush → 
+* **Claude Code** → De Anthropic. Agente CLI nativo de Claude. Incluido en la suscripcion Pro ($20/mes), requiere cuenta de Anthropic
+* **GitHub CLI** → Extension `gh copilot` para usar Copilot desde terminal. Incluido en Copilot Pro ($10/mes)
+* **OpenCode** → Open source y gratuito. Funciona con cualquier proveedor via API keys, Zen (pay-as-you-go) o Go ($10/mes). Desktop app disponible
+* **Crush** → Agente CLI de coding. Alternativa emergente en el espacio de agentes de terminal 
 
 ## Suscripciones
 
 La tabla muestra el plan minimo que incluye acceso a coding agentic y su precio mensual.
 
 | Servicio               | Plan agentic   | Precio ($/mes) | Tipo          | Observaciones |
-|------------------------|----------------|----------------|---------------|---------------------------------------------------------------------------------------------|
+|------------------------|----------------|----------------|---------------|---------------------------------------------------------|
 | Claude (Anthropic)     | Pro            | $20            | Claude Code   | Incluye Claude Code, Cowork y Design. Uso limitado |
 | ChatGPT (OpenAI)       | Plus           | $20            | CLI           | Incluye Codex con uso expandido y modo agente |
 | GitHub Copilot         | Pro            | $10            | IDE + CLI     | El mas barato con agentic completo |
