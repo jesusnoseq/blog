@@ -32,7 +32,6 @@ Obviamente a mas potente sea el modelo mejor, podremos dejarle escribir tareas m
 con menos errors. Notece el uso de "dejarle escribir" y no usar otros verbos como confiar, delegar, dejarle hacer. A mayor sea la tarea mayor la "deuda cognitiva" y mas dificil se hace el revisar el código en detalle.
 Mi forma de trabajar hasta ahora es intentar darle al agente tareas cortas lo mas acotadas posibles y revisar cada linea cambiada. Tambien lo uso mucho para revisar codigo y detectar posibles problemas.
 
-
 ## Herramientas Agenticas
 
 ### IDE
@@ -43,7 +42,7 @@ Dentro de esta categoría tenemos
 
 * Visual Studio Code (VSC) → 
 * Cursor → 
-* Windsurf → 
+* Devin Desktop (ex-Windsurf) → 
 * Trae → 
 
 ### CLI
@@ -55,15 +54,20 @@ Podemos usar los agentes de IA desde una terminal. Curiosamente los agentes func
 * Github CLI → 
 * Crush → 
 
-## Subscripciones
+## Suscripciones
 
-Claude
-ChatGPT
-Cursor
-Opencode
-Github Copilot
-Trae
+La tabla muestra el plan minimo que incluye acceso a coding agentic y su precio mensual.
 
+| Servicio               | Plan agentic   | Precio ($/mes) | Tipo          | Observaciones |
+|------------------------|----------------|----------------|---------------|---------------------------------------------------------------------------------------------|
+| Claude (Anthropic)     | Pro            | $20            | Claude Code   | Incluye Claude Code, Cowork y Design. Uso limitado |
+| ChatGPT (OpenAI)       | Plus           | $20            | CLI           | Incluye Codex con uso expandido y modo agente |
+| GitHub Copilot         | Pro            | $10            | IDE + CLI     | El mas barato con agentic completo |
+| Cursor                 | Pro            | $20            | IDE           | Modo agente con buena integracion IDE |
+| OpenCode Go            | Go             | $10/mes        | CLI + Desktop | $5 el primer mes. Modelos open source (GLM-5.1, DeepSeek V4, etc) |
+| Trae                   | Pro            | $10            | IDE           | De ByteDance. Modo SOLO (agente) |
+| Devin Desktop (ex-Windsurf) | Pro       | $20            | IDE           | Antes Windsurf. Cloud agents, modelo SWE 1.6 |
+| Google AI Plus         | Plus           | ~$22           | API + CLI     | Incluye Jules (agente coding) |
 
 ## Reflexiones
 
@@ -74,5 +78,3 @@ Trae
 * Es muy comodo usar siempre el modelo mas potente pero es caro. Ajusta el modelo a la tarea
 * Si quieres aprender algo, yo directamente intentaría empezar a hacer con ayuda de una buena subscripcion de IA en vez de comprar un curso, especialmente si es muy caro o largo.
 * Es posible que el precio de los modelos frontera siga subiendo pero los precios de los modelos que actualmente hacen un buen papel generando codigo bajen.
-
-
