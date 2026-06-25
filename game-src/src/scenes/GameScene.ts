@@ -46,6 +46,8 @@ export class GameScene extends Phaser.Scene {
   private readonly rockScratch: RockHit[] = [];
   private readonly fuelScratch: FuelTarget[] = [];
   private readonly aiInputs: InputState[] = [];
+  // Reused [player, ...ais] list for the pairwise rocket-vs-rocket collision pass.
+  private readonly rocketScratch: Rocket[] = [];
   private road!: Road;
   private hud!: HUD;
   private accumulator = 0;
@@ -158,6 +160,9 @@ export class GameScene extends Phaser.Scene {
     // across a boundary (checked next) and into elimination. Same rule for all.
     this.resolveCollisions(this.player);
     for (const ai of this.ais) this.resolveCollisions(ai);
+
+    // Rocket-vs-rocket: rockets shoulder-check each other (player ⇄ AI ⇄ AI).
+    this.resolveRocketCollisions();
 
     // Refuel while inside a pad (before the dead-engine check, so a zone can
     // revive a coasting empty rocket that drifts into it).
@@ -294,6 +299,25 @@ export class GameScene extends Phaser.Scene {
         this.aiRects[i].destroy();
         this.aiRects.splice(i, 1);
         this.ais.splice(i, 1);
+      }
+    }
+  }
+
+  /**
+   * Bump every pair of rockets (player + AI) that overlap this frame, so they
+   * can't pass through one another. Builds the flat list into reused scratch and
+   * resolves each unordered pair once.
+   */
+  private resolveRocketCollisions(): void {
+    const rockets = this.rocketScratch;
+    rockets.length = 0;
+    rockets.push(this.player);
+    for (const ai of this.ais) rockets.push(ai);
+
+    const r = CONFIG.collision.rocket;
+    for (let i = 0; i < rockets.length; i++) {
+      for (let j = i + 1; j < rockets.length; j++) {
+        rockets[i].resolveRocketCollision(rockets[j], r.radius, r.radius, r);
       }
     }
   }

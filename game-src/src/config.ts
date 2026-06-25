@@ -178,6 +178,13 @@ export const CONFIG = {
     speedLoss: 0.45, // fraction of velocity kept on impact (lower = harder stop)
     knockback: 160, // px/s outward impulse along the contact normal
     damage: false, // extension point: deal damage on hit (no health system yet)
+    // Rocket-vs-rocket bump (both bodies move): split the overlap, bounce apart.
+    // Softer than rocks — a shoulder-check, not a wall.
+    rocket: {
+      radius: 12, // collider radius per rocket (≈ size/2)
+      speedLoss: 0.6, // velocity kept on a bump (higher = bouncier, less stopping)
+      knockback: 120, // px/s outward impulse each body takes
+    },
   },
 
   // --- Feature flags (extension points for later milestones) ---

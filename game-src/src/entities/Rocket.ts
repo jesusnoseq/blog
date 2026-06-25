@@ -139,6 +139,52 @@ export class Rocket {
     return true;
   }
 
+  /**
+   * Resolve a circle-vs-circle hit against another rocket. Unlike
+   * {@link resolveRockCollision} (static rock), both bodies are dynamic: the
+   * overlap is split evenly and each is pushed half out along the contact normal
+   * (prev shifted too so interpolation stays consistent), then each bleeds speed by
+   * `speedLoss` and takes a `knockback` impulse in opposite directions — an arcade
+   * bump that lets rockets shoulder-check each other. No overlap is a no-op.
+   * Returns whether a hit occurred. Call once per unordered pair.
+   */
+  resolveRocketCollision(
+    other: Rocket,
+    selfR: number,
+    otherR: number,
+    response: CollisionResponse,
+  ): boolean {
+    const dx = this.x - other.x;
+    const dy = this.y - other.y;
+    const minDist = selfR + otherR;
+    const distSq = dx * dx + dy * dy;
+    if (distSq >= minDist * minDist) return false;
+
+    const dist = Math.sqrt(distSq);
+    // Exactly concentric (dist 0): fall back to a deterministic sideways normal so
+    // the pair still separates.
+    const nx = dist > 0 ? dx / dist : 1;
+    const ny = dist > 0 ? dy / dist : 0;
+
+    // Split the overlap: push each body half out along the normal (and its prev).
+    const half = (minDist - dist) / 2;
+    this.x += nx * half;
+    this.y += ny * half;
+    this.prevX += nx * half;
+    this.prevY += ny * half;
+    other.x -= nx * half;
+    other.y -= ny * half;
+    other.prevX -= nx * half;
+    other.prevY -= ny * half;
+
+    // Bleed speed, then bump apart in opposite directions.
+    this.vx = this.vx * response.speedLoss + nx * response.knockback;
+    this.vy = this.vy * response.speedLoss + ny * response.knockback;
+    other.vx = other.vx * response.speedLoss - nx * response.knockback;
+    other.vy = other.vy * response.speedLoss - ny * response.knockback;
+    return true;
+  }
+
   /** Add fuel (e.g. from a zone), capped at the tank's capacity. */
   refuel(amount: number): void {
     this.fuel = Math.min(this.maxFuel, this.fuel + amount);
