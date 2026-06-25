@@ -15,7 +15,7 @@ export const CONFIG = {
 
   // --- Camera ---
   camera: {
-    lookahead: 120, // px the camera leans toward "forward" (up) so you see ahead
+    lookahead: 200, // px the camera leans toward "forward" (up) so you see ahead
     lerp: 0.1, // follow smoothing, 0..1 (lower = smoother/laggier)
     deadzoneWidth: 800,
     deadzoneHeight: 140,
@@ -118,7 +118,7 @@ export const CONFIG = {
     start: 100, // tank level at run start
     mainDrain: 9, // units/s at full forward thrust
     sideDrain: 6, // units/s at full lateral thrust
-    refillRate: 70, // units/s while inside a fuel zone
+    refillRate: 40, // units/s while inside a fuel zone
     deadStopSpeed: 25, // px/s — empty tank + slower than this = coasted to death
   },
 
@@ -126,7 +126,7 @@ export const CONFIG = {
   fuelZone: {
     interval: 6, // a pad every Nth chunk ahead (deterministic → always reachable)
     width: 120, // pad size px (narrow lane within the 360 corridor)
-    height: 180, // pad extent along the chunk (long; of chunkHeight 200)
+    height: 280, // pad extent along the chunk (long; of chunkHeight 200)
     color: 0x1bd97b, // glowing green fill
     fillAlpha: 0.22,
     borderColor: 0x49ff8e,

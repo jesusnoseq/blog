@@ -34,6 +34,21 @@ Game-over screen: distance, survival time, final score (stub), restart. HUD stub
 Test gate: Leaving the road ends the run and shows the screen; restart works
 cleanly (state fully resets).
 
+## Camera minimum speed + scroll-crush
+
+Give the camera a constant minimum upward scroll speed (`CAMERA_MIN_SCROLL_SPEED`
+in CONFIG): it always advances at least this fast and never moves backward, but
+still follows the player normally when they out-run the floor. Any rocket whose
+body fully clears the bottom edge of the view is eliminated (same explosion +
+game-over path as off-road; cause reads "Fell behind"). When the player enters a
+danger band above the bottom edge (`CAMERA_DANGER_BAND`), show a visual warning
+that clears when they climb back out. Add `ELIMINATE_ON_BOTTOM` config flag. (AI
+are only subject to the crush once they exist — wire the shared check so it
+applies to every rocket; until then it gates the player.)
+Test gate: Sitting still (or coasting slowly) scrolls the world up and eventually
+crushes you off the bottom with a clear warning first; thrusting forward escapes
+the band. Restart fully resets camera scroll state.
+
 ## Rocks + collision
 
 Obstacle rocks with circle colliders. Collision = speed loss +
@@ -116,6 +131,8 @@ Thrusters and explosions look juicy, particle counts stay bounded,
 * Fuel drain/refill/death works; rocks + patterns + knockback; cone-push affects all rockets.
 * AI navigates, refuels, pushes, avoids self-elimination.
 * Off-road = explosion + elimination (player and AI).
+* Camera holds a minimum upward scroll speed; falling off the bottom edge =
+  explosion + elimination (player and AI), with a danger-zone warning first.
 * Difficulty rises with distance; pixel sprites crisp; particles render;
 * leaderboard persists; pause + restart work.
 * Every gameplay number lives in CONFIG.

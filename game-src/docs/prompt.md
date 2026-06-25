@@ -43,6 +43,15 @@ Top-down 2D arcade game. Rocket vehicles travel "up" an endless, procedurally ge
 
 - Any rocket (player or AI) whose body crosses a road boundary EXPLODES and is eliminated immediately (particle burst). This makes "push them off the road" a primary kill. Expose `ELIMINATE_ON_OFFROAD` as a config constant so it can be switched to slowdown later.
 
+## Scroll-Crush Rule (forced pace — instant elimination)
+
+- The camera has a **minimum upward scroll speed**: a constant `CAMERA_MIN_SCROLL_SPEED` (`CONFIG`) that it will always advance at, regardless of how slow (or stopped) the player is. The camera still follows the player normally when they out-run that floor — the minimum is a floor, never a cap. The camera never moves backward (down) and never scrolls slower than the floor, so the world is always being pulled "up" out from under a lagging rocket.
+- Any rocket (player or AI) that falls off the **bottom edge** of the camera view is eliminated immediately (same explosion/particle burst as off-road). Out-pacing a rival so they drop off the bottom is therefore a kill, and AI that fall too far behind the player get crushed automatically.
+- Elimination triggers only when a rocket's body has **fully cleared** the bottom edge of the view (forgiving — mirrors the off-road body-cross feel, not the centre-based off-road test). Tunable via the rocket's collision radius already in `CONFIG`.
+- **Danger-zone warning:** when the player's rocket enters a `CONFIG`-defined danger band just above the bottom edge (`CAMERA_DANGER_BAND`), show a visual warning (edge flash / "FALLING BEHIND" alert) so the crush is never a silent surprise. The warning clears once the player climbs back out of the band.
+- On game over via this rule, the cause readout reads e.g. "Fell behind" (alongside the existing "Off the road" / "Out of fuel" causes).
+- Expose `ELIMINATE_ON_BOTTOM` as a config flag (parallel to `ELIMINATE_ON_OFFROAD`) so the crush can be switched off or to a slowdown later.
+
 ## Fuel
 
 - Player has fuel (0..MAX). Main engine and side thrusters each drain fuel at tunable rates. HUD shows a fuel bar.
@@ -98,7 +107,7 @@ Top-down 2D arcade game. Rocket vehicles travel "up" an endless, procedurally ge
 
 ## Code Structure (ES6 classes in the single file)
 
-`Game` (loop, state: menu/playing/paused/gameover), `Camera`, `Road`, `Chunk`, `ProceduralGenerator`, `Rocket` (base), `PlayerRocket`, `AIRocket`, `Obstacle`, `FuelZone`, `ParticleSystem`, `InputManager`, `HUD`, `Leaderboard`. Put all tunables in a single `CONFIG` object at the top (fuel rates, forces, drag, speeds, road width, AI count, chunk weights, `ELIMINATE_ON_OFFROAD`, etc.) so balancing is one place.
+`Game` (loop, state: menu/playing/paused/gameover), `Camera`, `Road`, `Chunk`, `ProceduralGenerator`, `Rocket` (base), `PlayerRocket`, `AIRocket`, `Obstacle`, `FuelZone`, `ParticleSystem`, `InputManager`, `HUD`, `Leaderboard`. Put all tunables in a single `CONFIG` object at the top (fuel rates, forces, drag, speeds, road width, AI count, chunk weights, `ELIMINATE_ON_OFFROAD`, `CAMERA_MIN_SCROLL_SPEED`, `CAMERA_DANGER_BAND`, `ELIMINATE_ON_BOTTOM`, etc.) so balancing is one place.
 
 ## Acceptance Checklist
 
@@ -108,6 +117,7 @@ Top-down 2D arcade game. Rocket vehicles travel "up" an endless, procedurally ge
 - Rocks with patterns + knockback; cone-push affects other rockets.
 - AI navigates, refuels, pushes, and avoids self-elimination.
 - Off-road = explosion + elimination for player and AI.
+- Camera holds a minimum upward scroll speed; falling off the bottom edge = explosion + elimination (player and AI), with a danger-zone warning before the crush.
 - Difficulty rises with distance; particles render; localStorage leaderboard persists; pause and restart work.
 - All gameplay numbers live in `CONFIG`.
 
