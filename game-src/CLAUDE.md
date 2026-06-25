@@ -6,8 +6,8 @@ An **infinite top-down rocket racing game** built as a self-contained web game t
 lives inside a Hugo blog (`C:\dev\blog`). The build output must be embeddable: a JS
 bundle + an HTML file that run by opening in any modern browser.
 
-The full game design is in [`prompt.md`](./prompt.md). The ordered build plan with
-per-step test gates is in [`milestones.md`](./milestones.md). **Read both before
+The full game design is in [`prompt.md`](./docs/prompt.md). The ordered build plan with
+per-step test gates is in [`milestones.md`](./docs/milestones.md). **Read both before
 implementing** — they are the source of truth for scope and acceptance criteria.
 
 ## Tech stack & tooling
@@ -67,11 +67,26 @@ lives in one place. Core classes:
 
 ## Current state
 
-**Milestone 1 (Skeleton + game loop) — done.** `game-src/` scaffolded with Vite + TS +
-Phaser 3; `CONFIG` seeded; `InputManager` (keyboard W/A/D + arrows, P, R, gamepad
-left-stick stub); `GameScene` with a placeholder player the camera follows, P
-pause/resume, R restart. Typecheck + build pass; dev server runs.
+**Milestones 1–5 — done.**
+- **M1 (Skeleton + loop):** Vite + TS + Phaser 3; `CONFIG`; `InputManager` (W/A/D +
+  arrows, P, R, gamepad left-stick stub); fixed-timestep loop with P pause / R restart.
+- **M2 (Movement physics):** `Rocket` base + `PlayerRocket`; vector velocity/accel,
+  per-axis longitudinal/lateral drag, max-speed clamp; render interpolation; camera
+  follow with look-ahead.
+- **M3 (Infinite road):** `Road` / `Chunk` / `ProceduralGenerator` (empty chunks);
+  constant-width corridor, object-pooled chunks, bounded chunk count.
+- **M4 (Off-road elimination + game over):** `Road.isOffRoad(x)` (centre crossing the
+  ±halfWidth boundary); `GameScene` state machine (`playing | paused | gameover`) +
+  survival timer; `HUD` (live distance/speed/score readout + game-over overlay with
+  distance/time/score and restart prompt). `CONFIG.ELIMINATE_ON_OFFROAD` gates the
+  check; score is a distance-based stub. R restarts with full state reset.
+- **M5 (Rocks + collision):** `rockPatterns.ts` (slalom/chicane/narrow/cluster,
+  seeded, on-road clamped); `ProceduralGenerator` picks empty-vs-rock per chunk via a
+  per-index reseeded RNG (safe start kept clear); `Chunk` stores + draws rocks and
+  redraws on each placement; `Road.forEachRock` yields world-space colliders;
+  `Rocket.resolveRockCollision` (separate + speed-loss + knockback, reused by AI
+  later) wired in `GameScene` before the off-road check. `CONFIG.rocks` /
+  `CONFIG.collision` (incl. off-by-default `damage` flag).
 
-**Next:** Milestone 2 — Player rocket + movement physics (vector velocity/accel,
-separate longitudinal/lateral drag, max-speed clamp). This replaces the placeholder
-translation in `GameScene.update` / `CONFIG.player.placeholderSpeed`.
+**Next:** Milestone 6 — Fuel system (fuel 0..MAX drained by main + side thrusters at
+CONFIG rates, fuel bar in HUD).
