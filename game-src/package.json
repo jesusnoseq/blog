@@ -1,0 +1,20 @@
+{
+  "name": "rocket-racer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Top-down infinite rocket racing game (built into ../static/game)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "phaser": "3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vite": "7.3.5"
+  }
+}

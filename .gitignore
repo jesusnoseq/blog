@@ -2,3 +2,9 @@ public/
 .hugo_build.lock
 indevelopment
 old.*
+
+# Rocket game (game-src/) — tooling + generated build output published to static/game
+game-src/node_modules/
+game-src/dist/
+static/game/index.html
+static/game/assets/
