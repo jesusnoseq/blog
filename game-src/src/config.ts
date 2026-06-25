@@ -19,6 +19,8 @@ export const CONFIG = {
     lerp: 0.1, // follow smoothing, 0..1 (lower = smoother/laggier)
     deadzoneWidth: 800,
     deadzoneHeight: 140,
+    minScrollSpeed: 120, // px/s — the view always advances up at least this fast (never reverses)
+    dangerBand: 160, // px above the bottom edge where the "falling behind" warning shows
   },
 
   // --- Road (infinite vertical corridor; chunked + object-pooled) ---
@@ -93,6 +95,16 @@ export const CONFIG = {
       borderColor: 0x3a3a52,
       borderWidth: 2,
     },
+    // Fall-behind warning — red band + text along the bottom when nearing the kill line.
+    danger: {
+      bandHeight: 90, // px tall red band hugging the bottom edge of the screen
+      color: 0xff5a6e, // band fill (matches the eliminated-title red)
+      alpha: 0.28, // band translucency at full pulse
+      text: 'FALLING BEHIND',
+      textColor: '#ff5a6e',
+      fontSize: 22, // px — warning label
+      pulseMs: 350, // half-period of the alpha pulse (yoyo)
+    },
   },
 
   // --- Rocks (obstacle pixels; drawn into chunk graphics, pooled with chunks) ---
@@ -143,4 +155,5 @@ export const CONFIG = {
 
   // --- Feature flags (extension points for later milestones) ---
   ELIMINATE_ON_OFFROAD: true,
+  ELIMINATE_ON_BOTTOM: true, // crush: falling off the bottom of the view ends the run
 } as const;

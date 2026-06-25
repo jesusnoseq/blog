@@ -8,6 +8,14 @@ import { HUD } from '../ui/HUD';
 /** Run lifecycle. (Menu arrives later; runs start in `playing` for now.) */
 type GameState = 'playing' | 'paused' | 'gameover';
 
+// Camera-floor bound span. The crush floor is imposed by moving a Phaser camera
+// bound so only its *bottom* limit binds `scrollY`; these make the other three
+// edges effectively infinite (huge enough no realistic run reaches them, small
+// enough to stay float-exact).
+const CAMERA_BOUND_TOP = -1e8;
+const CAMERA_BOUND_X = -1e8;
+const CAMERA_BOUND_SPAN = 2e8;
+
 /**
  * GameScene — milestones 4–7.
  *
@@ -30,6 +38,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: HUD;
   private accumulator = 0;
   private survivalTime = 0; // seconds elapsed while playing (frozen on pause/death)
+  private cameraFloorY = 0; // max allowed camera scrollY; ratchets up at minScrollSpeed
   private state: GameState = 'playing';
 
   constructor() {
@@ -61,6 +70,10 @@ export class GameScene extends Phaser.Scene {
     cam.setDeadzone(CONFIG.camera.deadzoneWidth, CONFIG.camera.deadzoneHeight);
     // Lean the view "forward" (up) so the player sits lower and sees ahead.
     cam.setFollowOffset(0, CONFIG.camera.lookahead);
+    // Camera starts unbounded; the first playing frame establishes the crush floor
+    // from wherever the follow settles. (Reset here so restarts start fresh.)
+    cam.removeBounds();
+    this.cameraFloorY = cam.scrollY;
 
     this.inputManager = new InputManager(this);
     this.hud = new HUD(this);
@@ -83,19 +96,20 @@ export class GameScene extends Phaser.Scene {
     if (this.inputManager.justPressedPause()) {
       this.state = this.state === 'paused' ? 'playing' : 'paused';
     }
-    if (this.state === 'paused') return;
+    if (this.state === 'paused') {
+      this.hud.setDanger(false); // don't leave the warning lingering over a pause
+      return;
+    }
 
-    this.survivalTime += delta / 1000;
+    const dt = delta / 1000;
+    this.survivalTime += dt;
     const input = this.inputManager.getState();
 
     // Fixed-timestep integration: accumulate real time and step physics in
     // constant slices so behaviour is frame-rate independent. The cap avoids a
     // spiral of death if a frame stalls (e.g. tab backgrounded). Input is
     // sampled once per frame and reused across substeps.
-    this.accumulator = Math.min(
-      this.accumulator + delta / 1000,
-      CONFIG.physics.maxFrameTime,
-    );
+    this.accumulator = Math.min(this.accumulator + dt, CONFIG.physics.maxFrameTime);
     while (this.accumulator >= CONFIG.physics.fixedStep) {
       this.player.step(CONFIG.physics.fixedStep, input, CONFIG.physics, CONFIG.fuel);
       this.accumulator -= CONFIG.physics.fixedStep;
@@ -108,7 +122,7 @@ export class GameScene extends Phaser.Scene {
     // Refuel while inside a pad (before the dead-engine check, so a zone can
     // revive a coasting empty rocket that drifts into it).
     if (this.road.isInFuelZone(this.player.x, this.player.y)) {
-      this.player.refuel(CONFIG.fuel.refillRate * (delta / 1000));
+      this.player.refuel(CONFIG.fuel.refillRate * dt);
     }
 
     // Render at the interpolated position between the two latest physics states.
@@ -116,12 +130,38 @@ export class GameScene extends Phaser.Scene {
     this.playerRect.x = this.player.getRenderX(alpha);
     this.playerRect.y = this.player.getRenderY(alpha);
 
+    // Camera floor (scroll-crush): ratchet the max allowed scrollY up by at least
+    // minScrollSpeed each frame and never let it fall back, imposed via a moving
+    // camera bound that Phaser's follow clamps against in preRender. The floor is
+    // relative to the camera's own position, so the follow still wins (the floor
+    // trails) whenever the player out-runs it; when the player stalls the floor
+    // drags the view up past them.
+    const cam = this.cameras.main;
+    this.cameraFloorY = cam.scrollY - CONFIG.camera.minScrollSpeed * dt;
+    cam.setBounds(
+      CAMERA_BOUND_X,
+      CAMERA_BOUND_TOP,
+      CAMERA_BOUND_SPAN,
+      this.cameraFloorY + cam.height - CAMERA_BOUND_TOP,
+    );
+    const bottomEdge = this.cameraFloorY + cam.height; // world Y of the kill line
+
     // Off-road = elimination: end the run once the rocket's centre leaves the
     // corridor (gated by the feature flag so it can be disabled for testing).
     if (CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(this.player.x)) {
       this.endRun('Off the road');
       return;
     }
+
+    // Scroll-crush = elimination: the rocket has fully dropped off the bottom of
+    // the view. Shared per-rocket test so AI reuse it once they exist (M8).
+    if (CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(this.player, bottomEdge)) {
+      this.endRun('Fell behind');
+      return;
+    }
+
+    // Warn before the crush: the player's body is within the danger band of the edge.
+    this.hud.setDanger(bottomEdge - this.player.y < CONFIG.camera.dangerBand);
 
     // Out of fuel: the engine is dead and the rocket has coasted to a near-stop.
     const speed = Math.hypot(this.player.vx, this.player.vy);
@@ -139,7 +179,7 @@ export class GameScene extends Phaser.Scene {
 
     // Generate/recycle road chunks around the (one-frame-lagged) camera view;
     // the ahead/behind margins absorb the lag.
-    this.road.update(this.cameras.main.worldView);
+    this.road.update(cam.worldView);
   }
 
   /** End the run: freeze the sim and show the game-over summary with its cause. */
@@ -151,6 +191,16 @@ export class GameScene extends Phaser.Scene {
       score: this.score(),
       cause,
     });
+  }
+
+  /**
+   * Whether a rocket has fully cleared the bottom edge of the view (its whole
+   * body is below `bottomEdge`, the camera's bottom in world space). Forgiving
+   * by design — the rocket survives until its leading point passes the line,
+   * mirroring the body-cross feel of the off-road rule. Reused per-rocket by AI.
+   */
+  private hasFallenBehind(rocket: PlayerRocket, bottomEdge: number): boolean {
+    return rocket.y - CONFIG.collision.playerRadius > bottomEdge;
   }
 
   /** Push the player out of any rock it overlaps, slowing and bouncing it. */

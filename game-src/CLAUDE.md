@@ -95,6 +95,14 @@ lives in one place. Core classes:
   `Road.isInFuelZone(x,y)` drives refill in `GameScene`. Empty tank + coast-to-stop
   (`fuel.deadStopSpeed`) ends the run; game-over overlay now shows the cause
   ("Off the road" / "Out of fuel").
+- **Scroll-crush (camera floor):** the camera always advances up at
+  `CONFIG.camera.minScrollSpeed` and never reverses — imposed by a per-frame moving
+  Phaser camera bound that follow clamps `scrollY` against in `preRender`, so the
+  follow still wins when the player out-runs the floor. A rocket whose body fully
+  clears the bottom edge is eliminated (`GameScene.hasFallenBehind`, shared so AI
+  reuse it; gated by `CONFIG.ELIMINATE_ON_BOTTOM`); cause "Fell behind". HUD shows a
+  pulsing "FALLING BEHIND" band within `CONFIG.camera.dangerBand` of the edge
+  (`HUD.setDanger`). Restart resets the floor (`cam.removeBounds()` in `create`).
 
 **Next:** Milestone 8 — AI opponents (`AIRocket` state machine: follow road, avoid
 rocks + boundaries, divert to fuel when low, no self-elimination; HUD opponents

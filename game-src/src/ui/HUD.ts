@@ -37,6 +37,10 @@ export class HUD {
   private readonly cause: Phaser.GameObjects.Text;
   private readonly summary: Phaser.GameObjects.Text;
   private readonly prompt: Phaser.GameObjects.Text;
+  private readonly dangerBand: Phaser.GameObjects.Rectangle;
+  private readonly dangerText: Phaser.GameObjects.Text;
+  private readonly dangerPulse: Phaser.Tweens.Tween;
+  private dangerActive = false;
 
   constructor(scene: Phaser.Scene) {
     const h = CONFIG.hud;
@@ -106,6 +110,36 @@ export class HUD {
       .setScrollFactor(0)
       .setDepth(h.depth)
       .setVisible(false);
+
+    // Fall-behind warning: a red band hugging the bottom edge with a label,
+    // shown while the player nears the camera's bottom (the crush kill line).
+    const d = h.danger;
+    this.dangerBand = scene.add
+      .rectangle(cx, CONFIG.height - d.bandHeight / 2, CONFIG.width, d.bandHeight, d.color, d.alpha)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    this.dangerText = scene.add
+      .text(cx, CONFIG.height - d.bandHeight / 2, d.text, {
+        fontFamily: h.fontFamily,
+        fontSize: `${d.fontSize}px`,
+        color: d.textColor,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    // One paused pulse tween reused across runs: fades the warning in/out while active.
+    this.dangerPulse = scene.tweens.add({
+      targets: [this.dangerBand, this.dangerText],
+      alpha: { from: 1, to: 0.3 },
+      duration: d.pulseMs,
+      yoyo: true,
+      repeat: -1,
+      paused: true,
+    });
   }
 
   /** Refresh the live stats readout. */
@@ -130,8 +164,25 @@ export class HUD {
     this.fuelBar.strokeRect(f.x, f.y, f.width, f.height);
   }
 
+  /**
+   * Toggle the fall-behind warning. Idempotent — the pulse tween is only
+   * started/stopped on a state change, so calling this every frame is cheap.
+   */
+  setDanger(active: boolean): void {
+    if (active === this.dangerActive) return;
+    this.dangerActive = active;
+    this.dangerBand.setVisible(active);
+    this.dangerText.setVisible(active);
+    if (active) {
+      this.dangerPulse.restart();
+    } else {
+      this.dangerPulse.pause();
+    }
+  }
+
   /** Show the game-over overlay with the run summary; hides the live stats + bar. */
   showGameOver({ distanceM, timeS, score, cause }: GameOverStats): void {
+    this.setDanger(false);
     this.stats.setVisible(false);
     this.fuelBar.setVisible(false);
     this.cause.setText(cause);
