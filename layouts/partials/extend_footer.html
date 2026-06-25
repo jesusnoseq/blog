@@ -1,0 +1,29 @@
+<script>
+(function () {
+  var code = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+  var pos = 0;
+  var loaded = false;
+  document.addEventListener("keydown", function (e) {
+    if (e.key === code[pos]) {
+      pos++;
+      console.log("You are going in the right direction!");
+      if (pos === code.length) {
+        pos = 0;
+        if (!loaded) {
+          loaded = true;
+          var s = document.createElement("script");
+          s.src = "{{ "js/secret.js" | absURL }}";
+          s.onload = function () {
+            showSecret();
+          };
+          document.body.appendChild(s);
+        } else {
+          showSecret();
+        }
+      }
+    } else {
+      pos = 0;
+    }
+  });
+})();
+</script>
