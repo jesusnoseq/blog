@@ -1,31 +1,50 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { InputManager } from '../input/InputManager';
+import { PlayerRocket } from '../entities/PlayerRocket';
+import { Road } from '../world/Road';
+import { HUD } from '../ui/HUD';
+
+/** Run lifecycle. (Menu arrives later; runs start in `playing` for now.) */
+type GameState = 'playing' | 'paused' | 'gameover';
 
 /**
- * GameScene — milestone 1 skeleton.
+ * GameScene — milestone 4.
  *
- * Stands up the game loop with a placeholder player the camera follows, plus
- * pause (P) and restart (R). Real movement physics, the road, rocks, fuel, AI,
- * combat and pixel-art rendering arrive in later milestones; the placeholder
- * translation here exists purely to make camera-follow visibly work.
+ * Runs the game loop with a physics-driven player rocket the camera follows over
+ * an infinite, chunked road, plus pause (P) and restart (R). Physics integrate
+ * at a fixed timestep and the visual is rendered at an interpolated position for
+ * smooth motion independent of frame rate. The run now ends when the rocket's
+ * centre crosses a road boundary (gated by `CONFIG.ELIMINATE_ON_OFFROAD`): the
+ * HUD shows a game-over summary and the simulation halts until R restarts. Rocks,
+ * fuel, AI, combat and pixel-art rendering arrive in later milestones; the player
+ * is still a plain rectangle.
  */
 export class GameScene extends Phaser.Scene {
   // NOTE: `input` is reserved by Phaser.Scene, so the manager is `inputManager`.
   private inputManager!: InputManager;
-  private player!: Phaser.GameObjects.Rectangle;
-  private isPaused = false;
+  private player!: PlayerRocket;
+  private playerRect!: Phaser.GameObjects.Rectangle;
+  private road!: Road;
+  private hud!: HUD;
+  private accumulator = 0;
+  private survivalTime = 0; // seconds elapsed while playing (frozen on pause/death)
+  private state: GameState = 'playing';
 
   constructor() {
     super('GameScene');
   }
 
   create(): void {
-    this.isPaused = false;
+    this.state = 'playing';
+    this.accumulator = 0;
+    this.survivalTime = 0;
 
-    this.drawWorldGrid();
+    // Road is created first so the player draws on top of it.
+    this.road = new Road(this);
 
-    this.player = this.add.rectangle(
+    this.player = new PlayerRocket(0, 0);
+    this.playerRect = this.add.rectangle(
       0,
       0,
       CONFIG.player.size,
@@ -35,50 +54,99 @@ export class GameScene extends Phaser.Scene {
 
     const cam = this.cameras.main;
     cam.setBackgroundColor(CONFIG.backgroundColor);
-    cam.startFollow(this.player, true, CONFIG.camera.lerp, CONFIG.camera.lerp);
+    cam.startFollow(this.playerRect, true, CONFIG.camera.lerp, CONFIG.camera.lerp);
     cam.setDeadzone(CONFIG.camera.deadzoneWidth, CONFIG.camera.deadzoneHeight);
     // Lean the view "forward" (up) so the player sits lower and sees ahead.
     cam.setFollowOffset(0, CONFIG.camera.lookahead);
 
     this.inputManager = new InputManager(this);
+    this.hud = new HUD(this);
+
+    // Prime the road around the starting view so chunk 0 is present on frame 1.
+    this.road.update(cam.worldView);
   }
 
   update(_time: number, delta: number): void {
-    // Pause/restart are checked first so they work even while paused.
-    if (this.inputManager.justPressedPause()) {
-      this.isPaused = !this.isPaused;
-    }
+    // Restart works from any state and fully resets via create().
     if (this.inputManager.justPressedRestart()) {
       this.scene.restart();
       return;
     }
-    if (this.isPaused) return;
+    // The run is over: the game-over overlay is up; nothing left to simulate.
+    if (this.state === 'gameover') return;
 
-    const dt = delta / 1000;
-    const { thrust, steerX } = this.inputManager.getState();
+    // Pause toggles play⇄pause and is checked before the paused early-out so it
+    // still unpauses.
+    if (this.inputManager.justPressedPause()) {
+      this.state = this.state === 'paused' ? 'playing' : 'paused';
+    }
+    if (this.state === 'paused') return;
 
-    // Placeholder translation only (NOT the real physics model — milestone 2).
-    const speed = CONFIG.player.placeholderSpeed;
-    this.player.x += steerX * speed * dt;
-    this.player.y -= thrust * speed * dt; // "forward" = up = decreasing world Y
+    this.survivalTime += delta / 1000;
+    const input = this.inputManager.getState();
+
+    // Fixed-timestep integration: accumulate real time and step physics in
+    // constant slices so behaviour is frame-rate independent. The cap avoids a
+    // spiral of death if a frame stalls (e.g. tab backgrounded). Input is
+    // sampled once per frame and reused across substeps.
+    this.accumulator = Math.min(
+      this.accumulator + delta / 1000,
+      CONFIG.physics.maxFrameTime,
+    );
+    while (this.accumulator >= CONFIG.physics.fixedStep) {
+      this.player.step(CONFIG.physics.fixedStep, input, CONFIG.physics);
+      this.accumulator -= CONFIG.physics.fixedStep;
+    }
+
+    // Rock collisions: resolve after the step so knockback can push the player
+    // across a boundary (checked next) and into elimination.
+    this.resolveCollisions();
+
+    // Render at the interpolated position between the two latest physics states.
+    const alpha = this.accumulator / CONFIG.physics.fixedStep;
+    this.playerRect.x = this.player.getRenderX(alpha);
+    this.playerRect.y = this.player.getRenderY(alpha);
+
+    // Off-road = elimination: end the run once the rocket's centre leaves the
+    // corridor (gated by the feature flag so it can be disabled for testing).
+    if (CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(this.player.x)) {
+      this.state = 'gameover';
+      this.hud.showGameOver({
+        distanceM: this.distanceMeters(),
+        timeS: this.survivalTime,
+        score: this.score(),
+      });
+      return;
+    }
+
+    this.hud.setStats({
+      distanceM: this.distanceMeters(),
+      speed: Math.hypot(this.player.vx, this.player.vy) / CONFIG.hud.pixelsPerMeter,
+      score: this.score(),
+    });
+
+    // Generate/recycle road chunks around the (one-frame-lagged) camera view;
+    // the ahead/behind margins absorb the lag.
+    this.road.update(this.cameras.main.worldView);
+  }
+
+  /** Push the player out of any rock it overlaps, slowing and bouncing it. */
+  private resolveCollisions(): void {
+    this.road.forEachRock((x, y, r) => {
+      this.player.resolveRockCollision(x, y, r, CONFIG.collision.playerRadius, CONFIG.collision);
+    });
+  }
+
+  /** Forward progress in metres. Start is y=0 and "forward" is -Y, so -y is gain. */
+  private distanceMeters(): number {
+    return Math.max(0, -this.player.y) / CONFIG.hud.pixelsPerMeter;
   }
 
   /**
-   * A faint reference grid so movement and camera-follow are visible against the
-   * otherwise empty world. Temporary scaffolding — the procedural road replaces
-   * it in the "Infinite road + camera" milestone.
+   * Score — stub. Tracks distance for now; the full survival+ranking formula
+   * (opponents eliminated, etc.) lands in the propulsion-combat milestone.
    */
-  private drawWorldGrid(): void {
-    const grid = this.add.graphics();
-    grid.lineStyle(1, 0x223044, 1);
-    const extent = 5000;
-    const step = 100;
-    for (let x = -extent; x <= extent; x += step) {
-      grid.lineBetween(x, -extent, x, extent);
-    }
-    for (let y = -extent; y <= extent; y += step) {
-      grid.lineBetween(-extent, y, extent, y);
-    }
-    grid.setDepth(-10);
+  private score(): number {
+    return Math.floor(this.distanceMeters());
   }
 }
