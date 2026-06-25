@@ -19,6 +19,12 @@ export interface CollisionResponse {
   knockback: number; // px/s outward impulse along the contact normal
 }
 
+/** Fuel burn rates. A subset of `CONFIG.fuel` (the part `step` consumes). */
+export interface FuelTuning {
+  mainDrain: number; // units/s at full forward thrust
+  sideDrain: number; // units/s at full lateral thrust
+}
+
 /**
  * Rocket — engine-agnostic physics body shared by the player and AI.
  *
@@ -38,6 +44,9 @@ export class Rocket {
   /** Velocity vector (px/s). */
   vx = 0;
   vy = 0;
+  /** Fuel level and capacity. Set by the owner; 0 = dead engine (no thrust). */
+  fuel = 0;
+  maxFuel = 0;
 
   constructor(x = 0, y = 0) {
     this.x = x;
@@ -46,14 +55,29 @@ export class Rocket {
     this.prevY = y;
   }
 
-  /** Advance the simulation by one fixed step of `dt` seconds. */
-  step(dt: number, input: InputState, tuning: RocketTuning): void {
+  /**
+   * Advance the simulation by one fixed step of `dt` seconds. Thrust intent only
+   * takes effect while the tank has fuel ("dead engine" otherwise — the rocket
+   * coasts on drag), and acting on it burns fuel at the configured rates.
+   */
+  step(dt: number, input: InputState, tuning: RocketTuning, fuel: FuelTuning): void {
     this.prevX = this.x;
     this.prevY = this.y;
 
+    // Dead engine when out of fuel: thrusters produce no force.
+    const live = this.fuel > 0;
+    const thrust = live ? input.thrust : 0;
+    const steerX = live ? input.steerX : 0;
+
     // Acceleration from input intent. Forward thrust is up (-Y).
-    const ax = input.steerX * tuning.lateralAccel;
-    const ay = -input.thrust * tuning.forwardAccel;
+    const ax = steerX * tuning.lateralAccel;
+    const ay = -thrust * tuning.forwardAccel;
+
+    // Burn fuel for the force actually commanded this step.
+    if (live) {
+      const burn = (thrust * fuel.mainDrain + Math.abs(steerX) * fuel.sideDrain) * dt;
+      this.fuel = Math.max(0, this.fuel - burn);
+    }
 
     // Integrate velocity.
     this.vx += ax * dt;
@@ -113,6 +137,16 @@ export class Rocket {
     this.vx = this.vx * response.speedLoss + nx * response.knockback;
     this.vy = this.vy * response.speedLoss + ny * response.knockback;
     return true;
+  }
+
+  /** Add fuel (e.g. from a zone), capped at the tank's capacity. */
+  refuel(amount: number): void {
+    this.fuel = Math.min(this.maxFuel, this.fuel + amount);
+  }
+
+  /** Tank level as a 0..1 fraction (0 when uninitialised). */
+  fuelFraction(): number {
+    return this.maxFuel > 0 ? this.fuel / this.maxFuel : 0;
   }
 
   /** Position lerped from prev → current by `alpha` (0..1) for smooth rendering. */

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import type { Rock } from './rockPatterns';
+import type { FuelZone } from './FuelZone';
 
 /**
  * Chunk — one fixed-height segment of the road, pooled and repositioned rather
@@ -21,6 +22,8 @@ export class Chunk {
   topY = 0;
   /** Obstacle rocks in local coordinates; the generator fills these per placement. */
   readonly rocks: Rock[] = [];
+  /** Refuel pads in local coordinates; filled by the generator per placement. */
+  readonly fuelZones: FuelZone[] = [];
 
   constructor(scene: Phaser.Scene) {
     this.gfx = scene.add.graphics();
@@ -38,6 +41,7 @@ export class Chunk {
     this.gfx.setY(this.topY);
     this.gfx.setVisible(true);
     this.rocks.length = 0;
+    this.fuelZones.length = 0;
     this.gfx.clear();
     this.drawRoad();
   }
@@ -52,6 +56,18 @@ export class Chunk {
     this.gfx.fillCircle(x, y, r);
   }
 
+  /** Add a refuel pad (local coords, centre + size): record its area and draw it. */
+  addFuelZone(x: number, y: number, w: number, h: number): void {
+    this.fuelZones.push({ x, y, w, h });
+    const z = CONFIG.fuelZone;
+    const left = x - w / 2;
+    const top = y - h / 2;
+    this.gfx.fillStyle(z.color, z.fillAlpha);
+    this.gfx.fillRect(left, top, w, h);
+    this.gfx.lineStyle(z.borderWidth, z.borderColor, 1);
+    this.gfx.strokeRect(left, top, w, h);
+  }
+
   /** Hide while parked in the pool. */
   hide(): void {
     this.gfx.setVisible(false);
@@ -60,7 +76,7 @@ export class Chunk {
   /**
    * Draw the static road art (asphalt, boundaries, dashed lane) in local
    * coordinates. Redrawn on each {@link place} so a recycled chunk starts from a
-   * clean surface before its rocks (and later fuel pads) are layered on top.
+   * clean surface before its rocks and fuel pads are layered on top.
    */
   private drawRoad(): void {
     const r = CONFIG.road;

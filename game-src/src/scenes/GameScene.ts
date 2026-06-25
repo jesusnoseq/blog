@@ -9,16 +9,17 @@ import { HUD } from '../ui/HUD';
 type GameState = 'playing' | 'paused' | 'gameover';
 
 /**
- * GameScene — milestone 4.
+ * GameScene — milestones 4–7.
  *
  * Runs the game loop with a physics-driven player rocket the camera follows over
  * an infinite, chunked road, plus pause (P) and restart (R). Physics integrate
  * at a fixed timestep and the visual is rendered at an interpolated position for
- * smooth motion independent of frame rate. The run now ends when the rocket's
- * centre crosses a road boundary (gated by `CONFIG.ELIMINATE_ON_OFFROAD`): the
- * HUD shows a game-over summary and the simulation halts until R restarts. Rocks,
- * fuel, AI, combat and pixel-art rendering arrive in later milestones; the player
- * is still a plain rectangle.
+ * smooth motion independent of frame rate. The run ends — game-over summary up,
+ * simulation halted until R — when the rocket crosses a boundary (gated by
+ * `CONFIG.ELIMINATE_ON_OFFROAD`), hits rocks hard enough to be shoved off, or runs
+ * the fuel tank dry and coasts to a stop. Fuel drains while thrusting and refills
+ * inside pads. AI, combat and pixel-art rendering arrive later; the player is still
+ * a plain rectangle.
  */
 export class GameScene extends Phaser.Scene {
   // NOTE: `input` is reserved by Phaser.Scene, so the manager is `inputManager`.
@@ -44,6 +45,8 @@ export class GameScene extends Phaser.Scene {
     this.road = new Road(this);
 
     this.player = new PlayerRocket(0, 0);
+    this.player.maxFuel = CONFIG.fuel.max;
+    this.player.fuel = CONFIG.fuel.start;
     this.playerRect = this.add.rectangle(
       0,
       0,
@@ -94,13 +97,19 @@ export class GameScene extends Phaser.Scene {
       CONFIG.physics.maxFrameTime,
     );
     while (this.accumulator >= CONFIG.physics.fixedStep) {
-      this.player.step(CONFIG.physics.fixedStep, input, CONFIG.physics);
+      this.player.step(CONFIG.physics.fixedStep, input, CONFIG.physics, CONFIG.fuel);
       this.accumulator -= CONFIG.physics.fixedStep;
     }
 
     // Rock collisions: resolve after the step so knockback can push the player
     // across a boundary (checked next) and into elimination.
     this.resolveCollisions();
+
+    // Refuel while inside a pad (before the dead-engine check, so a zone can
+    // revive a coasting empty rocket that drifts into it).
+    if (this.road.isInFuelZone(this.player.x, this.player.y)) {
+      this.player.refuel(CONFIG.fuel.refillRate * (delta / 1000));
+    }
 
     // Render at the interpolated position between the two latest physics states.
     const alpha = this.accumulator / CONFIG.physics.fixedStep;
@@ -110,24 +119,38 @@ export class GameScene extends Phaser.Scene {
     // Off-road = elimination: end the run once the rocket's centre leaves the
     // corridor (gated by the feature flag so it can be disabled for testing).
     if (CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(this.player.x)) {
-      this.state = 'gameover';
-      this.hud.showGameOver({
-        distanceM: this.distanceMeters(),
-        timeS: this.survivalTime,
-        score: this.score(),
-      });
+      this.endRun('Off the road');
+      return;
+    }
+
+    // Out of fuel: the engine is dead and the rocket has coasted to a near-stop.
+    const speed = Math.hypot(this.player.vx, this.player.vy);
+    if (this.player.fuel <= 0 && speed < CONFIG.fuel.deadStopSpeed) {
+      this.endRun('Out of fuel');
       return;
     }
 
     this.hud.setStats({
       distanceM: this.distanceMeters(),
-      speed: Math.hypot(this.player.vx, this.player.vy) / CONFIG.hud.pixelsPerMeter,
+      speed: speed / CONFIG.hud.pixelsPerMeter,
       score: this.score(),
     });
+    this.hud.setFuel(this.player.fuelFraction());
 
     // Generate/recycle road chunks around the (one-frame-lagged) camera view;
     // the ahead/behind margins absorb the lag.
     this.road.update(this.cameras.main.worldView);
+  }
+
+  /** End the run: freeze the sim and show the game-over summary with its cause. */
+  private endRun(cause: string): void {
+    this.state = 'gameover';
+    this.hud.showGameOver({
+      distanceM: this.distanceMeters(),
+      timeS: this.survivalTime,
+      score: this.score(),
+      cause,
+    });
   }
 
   /** Push the player out of any rock it overlaps, slowing and bouncing it. */

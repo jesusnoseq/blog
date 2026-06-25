@@ -77,8 +77,22 @@ export const CONFIG = {
     panelFontSize: 18, // px — stat lines + restart prompt
     panelColor: '#cfe8ff',
     promptColor: '#8fa8c8',
+    causeColor: '#ffb454', // game-over subtitle (why the run ended)
     lineSpacing: 8, // px between stacked game-over text lines
     depth: 1000, // render above everything (road = -10, player = default 0)
+    // Fuel bar — sits under the live stats text, top-left.
+    fuelBar: {
+      x: 12,
+      y: 84,
+      width: 160,
+      height: 14,
+      bgColor: 0x1f1f2e, // empty-tank track
+      color: 0x49ff8e, // healthy fuel (green)
+      lowColor: 0xff5a6e, // low fuel (red)
+      lowFrac: 0.25, // bar turns red at/below this fraction
+      borderColor: 0x3a3a52,
+      borderWidth: 2,
+    },
   },
 
   // --- Rocks (obstacle pixels; drawn into chunk graphics, pooled with chunks) ---
@@ -94,6 +108,29 @@ export const CONFIG = {
     color: 0x6b6b7a, // rock body — muted grey, reads against dark asphalt
     outlineColor: 0x2a2a34, // 1–2px darker rim for shape readability
     outlineWidth: 3,
+  },
+
+  // --- Fuel (drained by thrusters, refilled in zones; empty = dead engine) ---
+  // Tuned so coasting (low longitudinal drag) stretches the tank far enough to
+  // reach the next zone with careful play; balance by feel per the M7 gate.
+  fuel: {
+    max: 100,
+    start: 100, // tank level at run start
+    mainDrain: 9, // units/s at full forward thrust
+    sideDrain: 6, // units/s at full lateral thrust
+    refillRate: 70, // units/s while inside a fuel zone
+    deadStopSpeed: 25, // px/s — empty tank + slower than this = coasted to death
+  },
+
+  // --- Fuel zones (refuel pads spawned periodically along the road) ---
+  fuelZone: {
+    interval: 6, // a pad every Nth chunk ahead (deterministic → always reachable)
+    width: 120, // pad size px (narrow lane within the 360 corridor)
+    height: 180, // pad extent along the chunk (long; of chunkHeight 200)
+    color: 0x1bd97b, // glowing green fill
+    fillAlpha: 0.22,
+    borderColor: 0x49ff8e,
+    borderWidth: 3,
   },
 
   // --- Collision response (circle vs circle; arcade speed-loss + knockback) ---

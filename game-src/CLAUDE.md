@@ -67,7 +67,7 @@ lives in one place. Core classes:
 
 ## Current state
 
-**Milestones 1–5 — done.**
+**Milestones 1–7 — done.**
 - **M1 (Skeleton + loop):** Vite + TS + Phaser 3; `CONFIG`; `InputManager` (W/A/D +
   arrows, P, R, gamepad left-stick stub); fixed-timestep loop with P pause / R restart.
 - **M2 (Movement physics):** `Rocket` base + `PlayerRocket`; vector velocity/accel,
@@ -87,6 +87,15 @@ lives in one place. Core classes:
   `Rocket.resolveRockCollision` (separate + speed-loss + knockback, reused by AI
   later) wired in `GameScene` before the off-road check. `CONFIG.rocks` /
   `CONFIG.collision` (incl. off-by-default `damage` flag).
+- **M6 (Fuel system):** `Rocket` holds `fuel`/`maxFuel`; `step` gates thrust on fuel
+  (empty = dead engine) and burns at `CONFIG.fuel` main/side rates; HUD fuel bar
+  (green→red when low). `refuel`/`fuelFraction` helpers.
+- **M7 (Fuel zones):** `FuelZone` pads placed periodically by `ProceduralGenerator`
+  (`CONFIG.fuelZone.interval`, rock-free safe chunks); `Chunk` stores/draws pads;
+  `Road.isInFuelZone(x,y)` drives refill in `GameScene`. Empty tank + coast-to-stop
+  (`fuel.deadStopSpeed`) ends the run; game-over overlay now shows the cause
+  ("Off the road" / "Out of fuel").
 
-**Next:** Milestone 6 — Fuel system (fuel 0..MAX drained by main + side thrusters at
-CONFIG rates, fuel bar in HUD).
+**Next:** Milestone 8 — AI opponents (`AIRocket` state machine: follow road, avoid
+rocks + boundaries, divert to fuel when low, no self-elimination; HUD opponents
+alive).

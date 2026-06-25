@@ -13,6 +13,7 @@ export interface GameOverStats {
   distanceM: number;
   timeS: number; // survival time, seconds
   score: number;
+  cause: string; // why the run ended (e.g. "Off the road", "Out of fuel")
 }
 
 /**
@@ -30,8 +31,10 @@ export interface GameOverStats {
  */
 export class HUD {
   private readonly stats: Phaser.GameObjects.Text;
+  private readonly fuelBar: Phaser.GameObjects.Graphics;
   private readonly overlay: Phaser.GameObjects.Rectangle;
   private readonly title: Phaser.GameObjects.Text;
+  private readonly cause: Phaser.GameObjects.Text;
   private readonly summary: Phaser.GameObjects.Text;
   private readonly prompt: Phaser.GameObjects.Text;
 
@@ -49,6 +52,8 @@ export class HUD {
       .setScrollFactor(0)
       .setDepth(h.depth);
 
+    this.fuelBar = scene.add.graphics().setScrollFactor(0).setDepth(h.depth);
+
     // Full-canvas dimming panel behind the game-over text.
     this.overlay = scene.add
       .rectangle(cx, cy, CONFIG.width, CONFIG.height, h.overlayColor, h.overlayAlpha)
@@ -61,6 +66,17 @@ export class HUD {
         fontFamily: h.fontFamily,
         fontSize: `${h.titleFontSize}px`,
         color: h.titleColor,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    this.cause = scene.add
+      .text(cx, cy - h.titleFontSize, '', {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.panelFontSize}px`,
+        color: h.causeColor,
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -101,9 +117,24 @@ export class HUD {
     ]);
   }
 
-  /** Show the game-over overlay with the run summary; hides the live stats. */
-  showGameOver({ distanceM, timeS, score }: GameOverStats): void {
+  /** Redraw the fuel bar to the given 0..1 fill (turns red when low). */
+  setFuel(fraction: number): void {
+    const f = CONFIG.hud.fuelBar;
+    const frac = Phaser.Math.Clamp(fraction, 0, 1);
+    this.fuelBar.clear();
+    this.fuelBar.fillStyle(f.bgColor, 1);
+    this.fuelBar.fillRect(f.x, f.y, f.width, f.height);
+    this.fuelBar.fillStyle(frac <= f.lowFrac ? f.lowColor : f.color, 1);
+    this.fuelBar.fillRect(f.x, f.y, f.width * frac, f.height);
+    this.fuelBar.lineStyle(f.borderWidth, f.borderColor, 1);
+    this.fuelBar.strokeRect(f.x, f.y, f.width, f.height);
+  }
+
+  /** Show the game-over overlay with the run summary; hides the live stats + bar. */
+  showGameOver({ distanceM, timeS, score, cause }: GameOverStats): void {
     this.stats.setVisible(false);
+    this.fuelBar.setVisible(false);
+    this.cause.setText(cause);
     this.summary.setText([
       `Distance   ${Math.floor(distanceM)} m`,
       `Survived   ${timeS.toFixed(1)} s`,
@@ -111,6 +142,7 @@ export class HUD {
     ]);
     this.overlay.setVisible(true);
     this.title.setVisible(true);
+    this.cause.setVisible(true);
     this.summary.setVisible(true);
     this.prompt.setVisible(true);
   }

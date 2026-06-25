@@ -79,6 +79,23 @@ export class Road {
     }
   }
 
+  /**
+   * True when world point (x, y) lies inside any active fuel pad. Pads are stored
+   * chunk-local, so each is offset by its chunk topY before the rect test. Only a
+   * couple of pads are ever active, so a flat scan is fine.
+   */
+  isInFuelZone(x: number, y: number): boolean {
+    for (const chunk of this.active.values()) {
+      for (const z of chunk.fuelZones) {
+        const cy = chunk.topY + z.y;
+        if (Math.abs(x - z.x) <= z.w / 2 && Math.abs(y - cy) <= z.h / 2) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /** Number of live chunks — should stay a small constant (bounded-memory check). */
   get activeCount(): number {
     return this.active.size;
