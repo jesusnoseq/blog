@@ -1,7 +1,11 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { InputManager } from '../input/InputManager';
+import type { InputState } from '../input/InputManager';
 import { PlayerRocket } from '../entities/PlayerRocket';
+import type { Rocket } from '../entities/Rocket';
+import { AIRocket } from '../entities/AIRocket';
+import type { AIPerception, FuelTarget, RockHit } from '../entities/AIRocket';
 import { Road } from '../world/Road';
 import { HUD } from '../ui/HUD';
 
@@ -34,6 +38,14 @@ export class GameScene extends Phaser.Scene {
   private inputManager!: InputManager;
   private player!: PlayerRocket;
   private playerRect!: Phaser.GameObjects.Rectangle;
+  // AI opponents and their visuals, kept index-aligned; both shrink on elimination.
+  private ais: AIRocket[] = [];
+  private aiRects: Phaser.GameObjects.Rectangle[] = [];
+  // Per-frame scratch reused across frames (cleared, not reallocated) so AI
+  // perception doesn't grow garbage: the shared rock/fuel snapshots and AI inputs.
+  private readonly rockScratch: RockHit[] = [];
+  private readonly fuelScratch: FuelTarget[] = [];
+  private readonly aiInputs: InputState[] = [];
   private road!: Road;
   private hud!: HUD;
   private accumulator = 0;
@@ -63,6 +75,24 @@ export class GameScene extends Phaser.Scene {
       CONFIG.player.size,
       CONFIG.player.color,
     );
+
+    // Spawn the AI field. Fresh arrays each create() so a restart doesn't retain
+    // references to the previous run's (now destroyed) rockets/rects. They start
+    // spread across the corridor a touch behind the player, in the rock-free safe
+    // zone (chunk 0 and ahead are kept clear by the generator).
+    this.ais = [];
+    this.aiRects = [];
+    const a = CONFIG.ai;
+    for (let i = 0; i < a.count; i++) {
+      const x = a.spawnSpreadX * ((i + 0.5) / a.count - 0.5);
+      const ai = new AIRocket(x, a.spawnY);
+      ai.maxFuel = a.maxFuel;
+      ai.fuel = a.startFuel;
+      this.ais.push(ai);
+      this.aiRects.push(
+        this.add.rectangle(x, a.spawnY, a.size, a.size, a.colors[i % a.colors.length]),
+      );
+    }
 
     const cam = this.cameras.main;
     cam.setBackgroundColor(CONFIG.backgroundColor);
@@ -105,30 +135,47 @@ export class GameScene extends Phaser.Scene {
     this.survivalTime += dt;
     const input = this.inputManager.getState();
 
+    // Build this frame's shared AI perception and let every AI decide its intent
+    // once (reused across substeps, exactly like the player's input). The rock/fuel
+    // snapshots are one frame lagged from the world — harmless at these margins.
+    const aiInputs = this.thinkAI();
+
     // Fixed-timestep integration: accumulate real time and step physics in
     // constant slices so behaviour is frame-rate independent. The cap avoids a
     // spiral of death if a frame stalls (e.g. tab backgrounded). Input is
-    // sampled once per frame and reused across substeps.
+    // sampled once per frame and reused across substeps. AI step in lockstep so
+    // every rocket shares one physics clock.
     this.accumulator = Math.min(this.accumulator + dt, CONFIG.physics.maxFrameTime);
     while (this.accumulator >= CONFIG.physics.fixedStep) {
       this.player.step(CONFIG.physics.fixedStep, input, CONFIG.physics, CONFIG.fuel);
+      for (let i = 0; i < this.ais.length; i++) {
+        this.ais[i].step(CONFIG.physics.fixedStep, aiInputs[i], CONFIG.ai, CONFIG.fuel);
+      }
       this.accumulator -= CONFIG.physics.fixedStep;
     }
 
-    // Rock collisions: resolve after the step so knockback can push the player
-    // across a boundary (checked next) and into elimination.
-    this.resolveCollisions();
+    // Rock collisions: resolve after the step so knockback can push a rocket
+    // across a boundary (checked next) and into elimination. Same rule for all.
+    this.resolveCollisions(this.player);
+    for (const ai of this.ais) this.resolveCollisions(ai);
 
     // Refuel while inside a pad (before the dead-engine check, so a zone can
     // revive a coasting empty rocket that drifts into it).
     if (this.road.isInFuelZone(this.player.x, this.player.y)) {
       this.player.refuel(CONFIG.fuel.refillRate * dt);
     }
+    for (const ai of this.ais) {
+      if (this.road.isInFuelZone(ai.x, ai.y)) ai.refuel(CONFIG.fuel.refillRate * dt);
+    }
 
     // Render at the interpolated position between the two latest physics states.
     const alpha = this.accumulator / CONFIG.physics.fixedStep;
     this.playerRect.x = this.player.getRenderX(alpha);
     this.playerRect.y = this.player.getRenderY(alpha);
+    for (let i = 0; i < this.ais.length; i++) {
+      this.aiRects[i].x = this.ais[i].getRenderX(alpha);
+      this.aiRects[i].y = this.ais[i].getRenderY(alpha);
+    }
 
     // Camera floor (scroll-crush): ratchet the max allowed scrollY up by at least
     // minScrollSpeed each frame and never let it fall back, imposed via a moving
@@ -160,6 +207,11 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // AI elimination: the same off-road / scroll-crush rules apply to opponents,
+    // but their death only thins the field (HUD count) — it never ends the player's
+    // run. Iterate back-to-front so removals don't skip entries.
+    this.eliminateDeadAI(bottomEdge);
+
     // Warn before the crush: the player's body is within the danger band of the edge.
     this.hud.setDanger(bottomEdge - this.player.y < CONFIG.camera.dangerBand);
 
@@ -174,6 +226,7 @@ export class GameScene extends Phaser.Scene {
       distanceM: this.distanceMeters(),
       speed: speed / CONFIG.hud.pixelsPerMeter,
       score: this.score(),
+      opponents: this.ais.length,
     });
     this.hud.setFuel(this.player.fuelFraction());
 
@@ -199,14 +252,56 @@ export class GameScene extends Phaser.Scene {
    * by design — the rocket survives until its leading point passes the line,
    * mirroring the body-cross feel of the off-road rule. Reused per-rocket by AI.
    */
-  private hasFallenBehind(rocket: PlayerRocket, bottomEdge: number): boolean {
+  private hasFallenBehind(rocket: Rocket, bottomEdge: number): boolean {
     return rocket.y - CONFIG.collision.playerRadius > bottomEdge;
   }
 
-  /** Push the player out of any rock it overlaps, slowing and bouncing it. */
-  private resolveCollisions(): void {
+  /**
+   * Refresh the shared rock/fuel perception snapshot and have every AI decide its
+   * intent for this frame. Returns an index-aligned input array (reused scratch).
+   * The crush line is taken from last frame's floor — it moves slowly, so the lag
+   * is immaterial and saves recomputing the camera bound up front.
+   */
+  private thinkAI(): InputState[] {
+    this.rockScratch.length = 0;
+    this.road.forEachRock((x, y, r) => this.rockScratch.push({ x, y, r }));
+    this.fuelScratch.length = 0;
+    this.road.forEachFuelZone((x, y) => this.fuelScratch.push({ x, y }));
+
+    const perception: AIPerception = {
+      roadHalfWidth: this.road.halfWidth,
+      bottomEdge: this.cameraFloorY + this.cameras.main.height,
+      rocks: this.rockScratch,
+      fuelZones: this.fuelScratch,
+    };
+
+    this.aiInputs.length = 0;
+    for (const ai of this.ais) this.aiInputs.push(ai.think(perception, CONFIG.ai));
+    return this.aiInputs;
+  }
+
+  /**
+   * Remove any AI eliminated this frame (off-road or fallen behind the crush),
+   * hiding its rectangle. Walks back-to-front so the index-aligned splices don't
+   * skip survivors. Does not touch run state — only the player can end the run.
+   */
+  private eliminateDeadAI(bottomEdge: number): void {
+    for (let i = this.ais.length - 1; i >= 0; i--) {
+      const ai = this.ais[i];
+      const offRoad = CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(ai.x);
+      const crushed = CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(ai, bottomEdge);
+      if (offRoad || crushed) {
+        this.aiRects[i].destroy();
+        this.aiRects.splice(i, 1);
+        this.ais.splice(i, 1);
+      }
+    }
+  }
+
+  /** Push a rocket out of any rock it overlaps, slowing and bouncing it. Shared by all rockets. */
+  private resolveCollisions(rocket: Rocket): void {
     this.road.forEachRock((x, y, r) => {
-      this.player.resolveRockCollision(x, y, r, CONFIG.collision.playerRadius, CONFIG.collision);
+      rocket.resolveRockCollision(x, y, r, CONFIG.collision.playerRadius, CONFIG.collision);
     });
   }
 

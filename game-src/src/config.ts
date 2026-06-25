@@ -19,7 +19,7 @@ export const CONFIG = {
     lerp: 0.1, // follow smoothing, 0..1 (lower = smoother/laggier)
     deadzoneWidth: 800,
     deadzoneHeight: 140,
-    minScrollSpeed: 120, // px/s — the view always advances up at least this fast (never reverses)
+    minScrollSpeed: 220, // px/s — the view always advances up at least this fast (never reverses)
     dangerBand: 160, // px above the bottom edge where the "falling behind" warning shows
   },
 
@@ -85,7 +85,7 @@ export const CONFIG = {
     // Fuel bar — sits under the live stats text, top-left.
     fuelBar: {
       x: 12,
-      y: 84,
+      y: 104, // below the 4-line stats readout (DIST/SPEED/SCORE/OPP)
       width: 160,
       height: 14,
       bgColor: 0x1f1f2e, // empty-tank track
@@ -143,6 +143,33 @@ export const CONFIG = {
     fillAlpha: 0.22,
     borderColor: 0x49ff8e,
     borderWidth: 3,
+  },
+
+  // --- AI opponents (Rocket subclass; one InputState synthesised per frame) ---
+  // Tuning mirrors `physics` initially so the race is fair, but lives separately so
+  // AI can be balanced independently (RocketTuning is per-rocket by design). The
+  // navigation knobs drive the racing/refuelling state machine in AIRocket.think.
+  ai: {
+    count: 3,
+    size: 24,
+    colors: [0xff8e49, 0xb96bff, 0x49ff8e], // ≥ count, all distinct from player blue
+    spawnSpreadX: 240, // x span across which the N AI start (within road width 360)
+    spawnY: 40, // start a touch behind the player (start is y=0; +Y is behind)
+    // Physics (mirrors CONFIG.physics; see RocketTuning).
+    forwardAccel: 1400,
+    lateralAccel: 1100,
+    longitudinalDrag: 0.8,
+    lateralDrag: 3.0,
+    maxSpeed: 600,
+    // Navigation.
+    lookahead: 280, // px ahead (-Y) to scan for threatening rocks
+    avoidClearance: 40, // px lateral margin to clear a rock's radius when dodging
+    edgeMargin: 60, // keep the steer target within ±(halfWidth - edgeMargin)
+    steerGain: 0.02, // maps (targetX - x) px → steerX before clamp to [-1, 1]
+    refuelFraction: 0.35, // tank below this → divert to the nearest fuel pad
+    resumeFraction: 0.85, // tank above this → resume racing (hysteresis)
+    maxFuel: 100,
+    startFuel: 100,
   },
 
   // --- Collision response (circle vs circle; arcade speed-loss + knockback) ---

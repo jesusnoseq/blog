@@ -80,6 +80,20 @@ export class Road {
   }
 
   /**
+   * Visit every active fuel pad's centre in world coordinates. Mirrors
+   * {@link forEachRock}: pads are stored chunk-local, so each is offset by its
+   * chunk topY. Only a couple are ever active — a flat scan is fine. Used by AI
+   * navigation to find a pad to divert to.
+   */
+  forEachFuelZone(cb: (worldX: number, worldY: number) => void): void {
+    for (const chunk of this.active.values()) {
+      for (const z of chunk.fuelZones) {
+        cb(z.x, chunk.topY + z.y);
+      }
+    }
+  }
+
+  /**
    * True when world point (x, y) lies inside any active fuel pad. Pads are stored
    * chunk-local, so each is offset by its chunk topY before the rect test. Only a
    * couple of pads are ever active, so a flat scan is fine.

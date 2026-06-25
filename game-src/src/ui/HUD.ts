@@ -6,6 +6,7 @@ export interface HudStats {
   distanceM: number; // forward progress, metres
   speed: number; // current speed, metres per second
   score: number; // running score (stub: tracks distance)
+  opponents: number; // AI rockets still alive
 }
 
 /** Final run summary shown on the game-over overlay. */
@@ -143,11 +144,12 @@ export class HUD {
   }
 
   /** Refresh the live stats readout. */
-  setStats({ distanceM, speed, score }: HudStats): void {
+  setStats({ distanceM, speed, score, opponents }: HudStats): void {
     this.stats.setText([
       `DIST  ${Math.floor(distanceM)} m`,
       `SPEED ${Math.round(speed)} m/s`,
       `SCORE ${score}`,
+      `OPP   ${opponents}`,
     ]);
   }
 
