@@ -98,7 +98,7 @@ export class HUD {
         align: 'center',
         lineSpacing: h.lineSpacing,
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5,0.20)
       .setScrollFactor(0)
       .setDepth(h.depth)
       .setVisible(false);
@@ -109,7 +109,7 @@ export class HUD {
         fontSize: `${h.panelFontSize}px`,
         color: h.promptColor,
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5, -0.2)
       .setScrollFactor(0)
       .setDepth(h.depth)
       .setVisible(false);
