@@ -20,10 +20,46 @@
       #game canvas {
         display: block;
       }
+      /* Optional CRT overlay (scanlines + vignette). A fixed, click-through layer
+         shown only while <body> carries the .crt-on class (toggled with V; default
+         off). Pure CSS, so it never touches the canvas/render path. */
+      #crt {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        pointer-events: none;
+        display: none;
+      }
+      body.crt-on #crt {
+        display: block;
+      }
+      #crt::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0) 0px,
+          rgba(0, 0, 0, 0) 2px,
+          rgba(0, 0, 0, 0.22) 3px,
+          rgba(0, 0, 0, 0.22) 4px
+        );
+      }
+      #crt::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.55) 100%
+        );
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-CjSn6k85.js"></script>
+    <script type="module" crossorigin src="./assets/index-DnkjEFSN.js"></script>
   </head>
   <body>
     <div id="game"></div>
+    <div id="crt"></div>
   </body>
 </html>
