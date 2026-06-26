@@ -46,12 +46,21 @@ export class GameScene extends Phaser.Scene {
   private readonly rockScratch: RockHit[] = [];
   private readonly fuelScratch: FuelTarget[] = [];
   private readonly aiInputs: InputState[] = [];
-  // Reused [player, ...ais] list for the pairwise rocket-vs-rocket collision pass.
+  // Reused [player, ...ais] list for the pairwise rocket-vs-rocket collision pass
+  // (also reused as the source/target list for the cone-push pass).
   private readonly rocketScratch: Rocket[] = [];
+  // Per-AI rival snapshot (the player + every other AI), reused per think() call.
+  private readonly rivalScratch: Rocket[] = [];
+  // Steer commanded by each rocket this frame, index-aligned with rocketScratch
+  // during the cone-push pass.
+  private readonly pushSteers: number[] = [];
+  // Translucent debug overlay for the active exhaust cones (gated by CONFIG.combat.debugCone).
+  private coneGfx!: Phaser.GameObjects.Graphics;
   private road!: Road;
   private hud!: HUD;
   private accumulator = 0;
   private survivalTime = 0; // seconds elapsed while playing (frozen on pause/death)
+  private eliminatedCount = 0; // opponents you've eliminated this run (scores killBonus each)
   private cameraFloorY = 0; // max allowed camera scrollY; ratchets up at minScrollSpeed
   private state: GameState = 'playing';
 
@@ -63,9 +72,13 @@ export class GameScene extends Phaser.Scene {
     this.state = 'playing';
     this.accumulator = 0;
     this.survivalTime = 0;
+    this.eliminatedCount = 0;
 
     // Road is created first so the player draws on top of it.
     this.road = new Road(this);
+
+    // Cone-push debug overlay sits just above the road, below the rockets.
+    this.coneGfx = this.add.graphics().setDepth(CONFIG.road.depth + 1);
 
     this.player = new PlayerRocket(0, 0);
     this.player.maxFuel = CONFIG.fuel.max;
@@ -156,6 +169,11 @@ export class GameScene extends Phaser.Scene {
       this.accumulator -= CONFIG.physics.fixedStep;
     }
 
+    // Propulsion combat: side-thruster exhaust cones shove other rockets away
+    // (player ⇄ AI ⇄ AI). A velocity impulse applied once per frame with frame
+    // dt — same pattern as refuel/knockback; position catches up via integration.
+    this.applyConePush(dt, input.steerX, aiInputs);
+
     // Rock collisions: resolve after the step so knockback can push a rocket
     // across a boundary (checked next) and into elimination. Same rule for all.
     this.resolveCollisions(this.player);
@@ -232,6 +250,7 @@ export class GameScene extends Phaser.Scene {
       speed: speed / CONFIG.hud.pixelsPerMeter,
       score: this.score(),
       opponents: this.ais.length,
+      eliminated: this.eliminatedCount,
     });
     this.hud.setFuel(this.player.fuelFraction());
 
@@ -247,6 +266,7 @@ export class GameScene extends Phaser.Scene {
       distanceM: this.distanceMeters(),
       timeS: this.survivalTime,
       score: this.score(),
+      eliminated: this.eliminatedCount,
       cause,
     });
   }
@@ -278,10 +298,20 @@ export class GameScene extends Phaser.Scene {
       bottomEdge: this.cameraFloorY + this.cameras.main.height,
       rocks: this.rockScratch,
       fuelZones: this.fuelScratch,
+      rivals: this.rivalScratch,
     };
 
     this.aiInputs.length = 0;
-    for (const ai of this.ais) this.aiInputs.push(ai.think(perception, CONFIG.ai));
+    for (let i = 0; i < this.ais.length; i++) {
+      // Rivals for AI i = the player + every *other* AI. Push the live Rocket refs
+      // (they expose x/y) into the reused scratch so perception stays zero-garbage.
+      this.rivalScratch.length = 0;
+      this.rivalScratch.push(this.player);
+      for (let j = 0; j < this.ais.length; j++) {
+        if (j !== i) this.rivalScratch.push(this.ais[j]);
+      }
+      this.aiInputs.push(this.ais[i].think(perception, CONFIG.ai));
+    }
     return this.aiInputs;
   }
 
@@ -296,11 +326,85 @@ export class GameScene extends Phaser.Scene {
       const offRoad = CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(ai.x);
       const crushed = CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(ai, bottomEdge);
       if (offRoad || crushed) {
+        this.eliminatedCount++; // every opponent death counts toward the kill score
         this.aiRects[i].destroy();
         this.aiRects.splice(i, 1);
         this.ais.splice(i, 1);
       }
     }
+  }
+
+  /**
+   * Propulsion combat — apply each firing side thruster's exhaust cone to the
+   * other rockets. A thruster fires when its rocket has fuel and a real lateral
+   * command (`|steerX| >= minSteer`); its cone points to the exhaust side
+   * (opposite the motion: `coneDirX = -sign(steerX)`), spreads to `halfAngleDeg`,
+   * and reaches `range`. Any other rocket inside is pushed *away from the source*
+   * by a velocity impulse that falls off linearly with distance — strongest at
+   * point-blank. Symmetric over all rockets, so player↔AI↔AI all push each other.
+   * Reuses `rocketScratch` (rebuilt here) as the shared source/target list.
+   */
+  private applyConePush(dt: number, playerSteer: number, aiSteers: InputState[]): void {
+    const c = CONFIG.combat;
+    this.coneGfx.clear(); // also clears last frame's cones when the overlay is off
+
+    const rockets = this.rocketScratch;
+    rockets.length = 0;
+    rockets.push(this.player);
+    for (const ai of this.ais) rockets.push(ai);
+
+    const steers = this.pushSteers;
+    steers.length = 0;
+    steers.push(playerSteer);
+    for (const s of aiSteers) steers.push(s.steerX);
+
+    const cosHalf = Math.cos(Phaser.Math.DegToRad(c.halfAngleDeg));
+
+    for (let i = 0; i < rockets.length; i++) {
+      const src = rockets[i];
+      const steer = steers[i];
+      // No thruster without fuel or a real lateral command → no cone.
+      if (src.fuel <= 0 || Math.abs(steer) < c.minSteer) continue;
+      // Exhaust (and its cone) is on the side opposite the motion.
+      const coneDirX = -Math.sign(steer);
+
+      if (c.debugCone) this.drawDebugCone(src.x, src.y, coneDirX, c.range, c.halfAngleDeg);
+
+      for (let j = 0; j < rockets.length; j++) {
+        if (j === i) continue;
+        const tgt = rockets[j];
+        const dx = tgt.x - src.x;
+        const dy = tgt.y - src.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist <= 0 || dist > c.range) continue;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        // Inside the cone? dot of unit (src→target) with axis (coneDirX, 0).
+        if (nx * coneDirX < cosHalf) continue;
+        // Push away from the source, strongest at point-blank.
+        const accel = c.pushAccel * (1 - dist / c.range) * dt;
+        tgt.vx += nx * accel;
+        tgt.vy += ny * accel;
+      }
+    }
+  }
+
+  /** Stroke one exhaust cone as a translucent triangle (debug tuning aid). */
+  private drawDebugCone(
+    x: number,
+    y: number,
+    coneDirX: number,
+    range: number,
+    halfAngleDeg: number,
+  ): void {
+    const half = Phaser.Math.DegToRad(halfAngleDeg);
+    const axis = coneDirX > 0 ? 0 : Math.PI; // cone axis angle (horizontal)
+    const p1x = x + Math.cos(axis - half) * range;
+    const p1y = y + Math.sin(axis - half) * range;
+    const p2x = x + Math.cos(axis + half) * range;
+    const p2y = y + Math.sin(axis + half) * range;
+    this.coneGfx.fillStyle(0xff5a6e, 0.18);
+    this.coneGfx.fillTriangle(x, y, p1x, p1y, p2x, p2y);
   }
 
   /**
@@ -335,10 +439,15 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Score — stub. Tracks distance for now; the full survival+ranking formula
-   * (opponents eliminated, etc.) lands in the propulsion-combat milestone.
+   * Score — the survival + ranking blend: forward distance, plus time survived
+   * (rewards staying alive even when stalled), plus a bonus per opponent
+   * eliminated. All three weights live in CONFIG.score.
    */
   private score(): number {
-    return Math.floor(this.distanceMeters());
+    return Math.floor(
+      this.distanceMeters() +
+        this.survivalTime * CONFIG.score.timeScore +
+        this.eliminatedCount * CONFIG.score.killBonus,
+    );
   }
 }

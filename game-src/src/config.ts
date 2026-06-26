@@ -85,7 +85,7 @@ export const CONFIG = {
     // Fuel bar — sits under the live stats text, top-left.
     fuelBar: {
       x: 12,
-      y: 104, // below the 4-line stats readout (DIST/SPEED/SCORE/OPP)
+      y: 126, // below the 5-line stats readout (DIST/SPEED/SCORE/OPP/KILLS)
       width: 160,
       height: 14,
       bgColor: 0x1f1f2e, // empty-tank track
@@ -137,8 +137,8 @@ export const CONFIG = {
   // --- Fuel zones (refuel pads spawned periodically along the road) ---
   fuelZone: {
     interval: 6, // a pad every Nth chunk ahead (deterministic → always reachable)
-    width: 120, // pad size px (narrow lane within the 360 corridor)
-    height: 280, // pad extent along the chunk (long; of chunkHeight 200)
+    width: 100, // pad size px (narrow lane within the 360 corridor)
+    height: 300, // pad extent along the chunk (long; of chunkHeight 200)
     color: 0x1bd97b, // glowing green fill
     fillAlpha: 0.22,
     borderColor: 0x49ff8e,
@@ -170,6 +170,11 @@ export const CONFIG = {
     resumeFraction: 0.85, // tank above this → resume racing (hysteresis)
     maxFuel: 100,
     startFuel: 100,
+    // Combat: when to fire the exhaust cone at a rival (see CONFIG.combat for the
+    // push physics; these gate only the AI's *decision* to engage).
+    combatRange: 110, // px to a rival within which it's worth firing
+    combatLevelBand: 70, // max |Δy| to a rival (the cone is horizontal — stay level)
+    combatEdgeSafety: 40, // don't fire if thrusting away would shove self toward an edge
   },
 
   // --- Collision response (circle vs circle; arcade speed-loss + knockback) ---
@@ -185,6 +190,26 @@ export const CONFIG = {
       speedLoss: 0.6, // velocity kept on a bump (higher = bouncier, less stopping)
       knockback: 120, // px/s outward impulse each body takes
     },
+  },
+
+  // --- Propulsion combat (side-thruster exhaust cone that shoves other rockets) ---
+  // A firing side thruster emits a cone on its exhaust side (opposite the motion:
+  // plume on the right when moving left). Any *other* rocket inside gets pushed
+  // away from the source, scaled by proximity. Wired both ways (player ⇄ AI ⇄ AI).
+  // This is the heaviest-tuned mechanic — balance for "decisive, not instant-win".
+  combat: {
+    range: 100, // px — cone length (max push reach)
+    halfAngleDeg: 35, // cone half-angle from its axis (full spread = 70°)
+    minSteer: 0.4, // |steerX| below this doesn't count as firing (ignore drift)
+    pushAccel: 2400, // px/s^2 — peak push at point-blank, falls off linearly to 0 at range
+    debugCone: true, // draw active cones as translucent triangles (tuning aid)
+  },
+
+  // --- Score (survival + ranking blend) ---
+  // Score = floor(distance) + time_survived * timeScore + eliminated * killBonus.
+  score: {
+    timeScore: 5, // points per second survived (the `k`)
+    killBonus: 250, // points per opponent eliminated (the `BONUS`)
   },
 
   // --- Feature flags (extension points for later milestones) ---

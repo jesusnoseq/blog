@@ -5,8 +5,9 @@ import { CONFIG } from '../config';
 export interface HudStats {
   distanceM: number; // forward progress, metres
   speed: number; // current speed, metres per second
-  score: number; // running score (stub: tracks distance)
+  score: number; // running score (survival + ranking blend)
   opponents: number; // AI rockets still alive
+  eliminated: number; // opponents you've eliminated this run
 }
 
 /** Final run summary shown on the game-over overlay. */
@@ -14,6 +15,7 @@ export interface GameOverStats {
   distanceM: number;
   timeS: number; // survival time, seconds
   score: number;
+  eliminated: number; // opponents eliminated this run
   cause: string; // why the run ended (e.g. "Off the road", "Out of fuel")
 }
 
@@ -144,12 +146,13 @@ export class HUD {
   }
 
   /** Refresh the live stats readout. */
-  setStats({ distanceM, speed, score, opponents }: HudStats): void {
+  setStats({ distanceM, speed, score, opponents, eliminated }: HudStats): void {
     this.stats.setText([
       `DIST  ${Math.floor(distanceM)} m`,
       `SPEED ${Math.round(speed)} m/s`,
       `SCORE ${score}`,
       `OPP   ${opponents}`,
+      `KILLS ${eliminated}`,
     ]);
   }
 
@@ -183,7 +186,7 @@ export class HUD {
   }
 
   /** Show the game-over overlay with the run summary; hides the live stats + bar. */
-  showGameOver({ distanceM, timeS, score, cause }: GameOverStats): void {
+  showGameOver({ distanceM, timeS, score, eliminated, cause }: GameOverStats): void {
     this.setDanger(false);
     this.stats.setVisible(false);
     this.fuelBar.setVisible(false);
@@ -191,6 +194,7 @@ export class HUD {
     this.summary.setText([
       `Distance   ${Math.floor(distanceM)} m`,
       `Survived   ${timeS.toFixed(1)} s`,
+      `Eliminated ${eliminated}`,
       `Score      ${score}`,
     ]);
     this.overlay.setVisible(true);

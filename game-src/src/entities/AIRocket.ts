@@ -14,6 +14,12 @@ export interface FuelTarget {
   y: number;
 }
 
+/** A rival rocket's centre in world coordinates (the subset combat needs). */
+export interface RivalTarget {
+  x: number;
+  y: number;
+}
+
 /**
  * What an {@link AIRocket} can perceive of the world this frame. Assembled by the
  * scene from {@link Road} so the AI stays decoupled from Phaser/Road (mirrors how
@@ -25,6 +31,7 @@ export interface AIPerception {
   bottomEdge: number; // crush kill line (world Y); the rocket must stay above it
   rocks: ReadonlyArray<RockHit>; // active rock colliders, world coords
   fuelZones: ReadonlyArray<FuelTarget>; // active fuel-pad centres, world coords
+  rivals: ReadonlyArray<RivalTarget>; // every *other* rocket's centre (combat targets)
 }
 
 /** Steering/navigation knobs. A subset of `CONFIG.ai` (the part `think` consumes). */
@@ -36,6 +43,9 @@ export interface AINavTuning {
   steerGain: number; // (targetX - x) px → steerX before clamp
   refuelFraction: number; // tank below → 'refueling'
   resumeFraction: number; // tank above → 'racing'
+  combatRange: number; // px to a rival within which it's worth firing the cone
+  combatLevelBand: number; // max |Δy| to a rival (horizontal cone → stay level)
+  combatEdgeSafety: number; // don't fire if thrusting away would shove self toward an edge
 }
 
 /** Mutually exclusive driving modes; hysteresis between them avoids dithering. */
@@ -101,7 +111,22 @@ export class AIRocket extends Rocket {
     targetX = Math.max(-limit, Math.min(limit, targetX));
 
     // Proportional steer toward the target lane.
-    const steerX = Math.max(-1, Math.min(1, (targetX - this.x) * cfg.steerGain));
+    let steerX = Math.max(-1, Math.min(1, (targetX - this.x) * cfg.steerGain));
+
+    // Offensive push: when racing with a clear path (navigation/refuel keep
+    // priority over combat), shove a nearby level rival with the exhaust cone.
+    // The cone fires opposite the motion, so to aim it at a rival on side `s` we
+    // thrust *away* (`steerX = -s`) — but only if that won't drive us off-road.
+    if (this.state === 'racing' && !threat) {
+      const rival = this.nearestRival(p.rivals, cfg);
+      if (rival) {
+        const s = Math.sign(rival.x - this.x);
+        const fire = -s; // thrust away → exhaust (and its cone) points at the rival
+        const safe =
+          fire > 0 ? this.x < limit - cfg.combatEdgeSafety : this.x > -limit + cfg.combatEdgeSafety;
+        if (s !== 0 && safe) steerX = fire;
+      }
+    }
 
     // Always drive forward: makes progress and stays ahead of the crush floor.
     return { thrust: 1, steerX };
@@ -118,6 +143,27 @@ export class AIRocket extends Rocket {
       if (d < bestSq) {
         bestSq = d;
         best = z;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * Nearest rival worth firing the exhaust cone at: within `combatRange` and
+   * roughly level (`|Δy| <= combatLevelBand`, since the cone is horizontal).
+   * Returns null when no rival qualifies.
+   */
+  private nearestRival(rivals: ReadonlyArray<RivalTarget>, cfg: AINavTuning): RivalTarget | null {
+    let best: RivalTarget | null = null;
+    let bestSq = cfg.combatRange * cfg.combatRange;
+    for (const r of rivals) {
+      if (Math.abs(r.y - this.y) > cfg.combatLevelBand) continue;
+      const dx = r.x - this.x;
+      const dy = r.y - this.y;
+      const d = dx * dx + dy * dy;
+      if (d < bestSq) {
+        bestSq = d;
+        best = r;
       }
     }
     return best;
