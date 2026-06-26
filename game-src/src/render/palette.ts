@@ -28,11 +28,12 @@ export const PALETTE = {
   rockDark: 0x44444f,
   rockOutline: 0x2a2a34,
 
-  // Flame / explosion ramp (used by sprites' nozzles now; particles later).
+  // Flame / explosion ramp (sprite nozzles + particle fades).
   white: 0xfdf7ff,
   yellow: 0xffe066,
   orange: 0xff8e49,
   red: 0xff5a6e,
+  ember: 0x7a1d2b, // dark red — the cooling tail of an explosion before it dies
 
   // Stars in the void.
   star: 0x6a6a9c,

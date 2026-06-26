@@ -9,6 +9,7 @@ import type { AIPerception, FuelTarget, RockHit } from '../entities/AIRocket';
 import { Road } from '../world/Road';
 import { HUD } from '../ui/HUD';
 import { SpriteFactory } from '../render/SpriteFactory';
+import { ParticleSystem } from '../render/ParticleSystem';
 
 /** Run lifecycle. (Menu arrives later; runs start in `playing` for now.) */
 type GameState = 'playing' | 'paused' | 'gameover';
@@ -60,6 +61,7 @@ export class GameScene extends Phaser.Scene {
   private readonly pushSteers: number[] = [];
   // Translucent debug overlay for the active exhaust cones (gated by CONFIG.combat.debugCone).
   private coneGfx!: Phaser.GameObjects.Graphics;
+  private particles!: ParticleSystem;
   private road!: Road;
   private hud!: HUD;
   private accumulator = 0;
@@ -93,6 +95,9 @@ export class GameScene extends Phaser.Scene {
 
     // Cone-push debug overlay sits just above the road, below the rockets.
     this.coneGfx = this.add.graphics().setDepth(CONFIG.road.depth + 1);
+
+    // Exhaust/explosion particles render behind the rockets (above the road/pads).
+    this.particles = new ParticleSystem(this, CONFIG.road.depth + 3);
 
     this.player = new PlayerRocket(0, 0);
     this.player.maxFuel = CONFIG.fuel.max;
@@ -141,8 +146,16 @@ export class GameScene extends Phaser.Scene {
       this.scene.restart();
       return;
     }
-    // The run is over: the game-over overlay is up; nothing left to simulate.
-    if (this.state === 'gameover') return;
+
+    const dt = delta / 1000;
+
+    // The run is over: the sim is halted, but keep ticking particles so the death
+    // burst plays out under the overlay.
+    if (this.state === 'gameover') {
+      this.particles.update(dt);
+      this.particles.draw();
+      return;
+    }
 
     // Pause toggles play⇄pause and is checked before the paused early-out so it
     // still unpauses.
@@ -154,7 +167,6 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    const dt = delta / 1000;
     this.survivalTime += dt;
     const input = this.inputManager.getState();
 
@@ -206,11 +218,19 @@ export class GameScene extends Phaser.Scene {
     this.playerSprite.x = this.player.getRenderX(alpha);
     this.playerSprite.y = this.player.getRenderY(alpha);
     this.playerSprite.rotation = input.steerX * bank;
+    this.emitExhaust(this.player, this.playerSprite.x, this.playerSprite.y, input, dt);
     for (let i = 0; i < this.ais.length; i++) {
-      this.aiSprites[i].x = this.ais[i].getRenderX(alpha);
-      this.aiSprites[i].y = this.ais[i].getRenderY(alpha);
+      const rx = this.ais[i].getRenderX(alpha);
+      const ry = this.ais[i].getRenderY(alpha);
+      this.aiSprites[i].x = rx;
+      this.aiSprites[i].y = ry;
       this.aiSprites[i].rotation = aiInputs[i].steerX * bank;
+      this.emitExhaust(this.ais[i], rx, ry, aiInputs[i], dt);
     }
+
+    // Advance and draw the exhaust/explosion particles for this frame.
+    this.particles.update(dt);
+    this.particles.draw();
 
     // Drift the starfield with the camera (parallax) so the void feels alive.
     this.voidBg.tilePositionY = this.cameras.main.scrollY * CONFIG.render.void.parallax;
@@ -274,9 +294,23 @@ export class GameScene extends Phaser.Scene {
     this.road.update(cam.worldView);
   }
 
+  /** Emit each thrusting rocket's exhaust (engine + correct-side plume) this frame. */
+  private emitExhaust(rocket: Rocket, x: number, y: number, intent: InputState, dt: number): void {
+    if (rocket.fuel <= 0) return;
+    if (intent.thrust > 0) {
+      this.particles.emitEngine(x, y, rocket.vx, rocket.vy, intent.thrust, dt);
+    }
+    if (Math.abs(intent.steerX) >= CONFIG.combat.minSteer) {
+      // Exhaust (plume) is on the side opposite the motion — same as the combat cone.
+      const dirX = -Math.sign(intent.steerX);
+      this.particles.emitSide(x, y, dirX, rocket.vx, rocket.vy, Math.abs(intent.steerX), dt);
+    }
+  }
+
   /** End the run: freeze the sim and show the game-over summary with its cause. */
   private endRun(cause: string): void {
     this.state = 'gameover';
+    this.particles.emitExplosion(this.playerSprite.x, this.playerSprite.y);
     this.hud.showGameOver({
       distanceM: this.distanceMeters(),
       timeS: this.survivalTime,
@@ -342,6 +376,7 @@ export class GameScene extends Phaser.Scene {
       const crushed = CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(ai, bottomEdge);
       if (offRoad || crushed) {
         this.eliminatedCount++; // every opponent death counts toward the kill score
+        this.particles.emitExplosion(this.aiSprites[i].x, this.aiSprites[i].y);
         this.aiSprites[i].destroy();
         this.aiSprites.splice(i, 1);
         this.ais.splice(i, 1);

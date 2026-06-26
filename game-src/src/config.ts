@@ -244,6 +244,45 @@ export const CONFIG = {
     killBonus: 250, // points per opponent eliminated (the `BONUS`)
   },
 
+  // --- Particles (pooled square pixels; palette-stepped fade, no alpha blur) ---
+  // Engine flame + side-thruster plumes while thrusting, explosion bursts on death.
+  // Counts are hard-capped (`max`) and emission scales with dt, so memory stays flat
+  // and behaviour is frame-rate independent. Sizes are in art "blocks" (×pixelScale).
+  particles: {
+    max: 500, // pool cap — emit() drops when full (bounded memory)
+    drag: 2.4, // 1/s exponential velocity decay so particles slow as they fade
+    // Main engine exhaust — out the rear (+Y) while holding thrust.
+    engine: {
+      rate: 95, // particles/s at full thrust
+      life: 0.28, // s
+      speed: 190, // px/s backward (down) ejection
+      spread: 70, // px/s lateral jitter
+      velCarry: 0.25, // fraction of the rocket's own velocity inherited
+      sizeBlocks: 2, // square edge in art blocks (×pixelScale px)
+      originY: 18, // spawn this far behind (below) the rocket centre
+      ramp: [PALETTE.white, PALETTE.yellow, PALETTE.orange], // hot → cool
+    },
+    // Side-thruster plume — on the exhaust side (opposite the steer).
+    side: {
+      rate: 70,
+      life: 0.22,
+      speed: 200,
+      spread: 60,
+      velCarry: 0.2,
+      sizeBlocks: 2,
+      originX: 14, // spawn this far to the exhaust side of the rocket centre
+      ramp: [PALETTE.white, PALETTE.yellow],
+    },
+    // Explosion burst — one-shot radial spray when a rocket is eliminated.
+    explosion: {
+      count: 36, // particles per burst
+      life: 0.6,
+      speed: 260, // max radial speed (each particle randomised up to this)
+      sizeBlocks: 3,
+      ramp: [PALETTE.white, PALETTE.yellow, PALETTE.orange, PALETTE.red, PALETTE.ember],
+    },
+  },
+
   // --- Feature flags (extension points for later milestones) ---
   ELIMINATE_ON_OFFROAD: true,
   ELIMINATE_ON_BOTTOM: true, // crush: falling off the bottom of the view ends the run
