@@ -10,6 +10,7 @@ import { Road } from '../world/Road';
 import { HUD } from '../ui/HUD';
 import { SpriteFactory } from '../render/SpriteFactory';
 import { ParticleSystem } from '../render/ParticleSystem';
+import { MusicSynth } from '../audio/MusicSynth';
 
 /** Run lifecycle. A run opens on the `ready` start screen and launches on thrust. */
 type GameState = 'ready' | 'playing' | 'paused' | 'gameover';
@@ -64,6 +65,10 @@ export class GameScene extends Phaser.Scene {
   private particles!: ParticleSystem;
   private road!: Road;
   private hud!: HUD;
+  // Procedural background music. Created once and kept across restarts (a single
+  // AudioContext is reused — browsers cap how many you may open), so it's `?`
+  // and lazily initialised rather than rebuilt each create().
+  private music?: MusicSynth;
   private accumulator = 0;
   private survivalTime = 0; // seconds elapsed while playing (frozen on pause/death)
   private eliminatedCount = 0; // opponents you've eliminated this run (scores killBonus each)
@@ -143,6 +148,11 @@ export class GameScene extends Phaser.Scene {
     this.inputManager = new InputManager(this);
     this.hud = new HUD(this);
 
+    // Music persists across restarts (one shared AudioContext); ensure it's
+    // silent on the start screen — it launches with the run, on first thrust.
+    if (!this.music) this.music = new MusicSynth();
+    this.music.stop();
+
     // Prime the road around the starting view so chunk 0 is present on frame 1.
     this.road.update(cam.worldView);
 
@@ -157,6 +167,13 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // M toggles the music on/off at any time. When re-enabled mid-run, resume it.
+    if (this.inputManager.justPressedMute()) {
+      const on = !this.music!.isEnabled();
+      this.music!.setEnabled(on);
+      if (on && this.state === 'playing') this.music!.start();
+    }
+
     const dt = delta / 1000;
 
     // Start screen: the world is staged but frozen until the player commands
@@ -166,6 +183,8 @@ export class GameScene extends Phaser.Scene {
       if (this.inputManager.getState().thrust > 0) {
         this.state = 'playing';
         this.hud.hideControls();
+        // The launch keypress is the user gesture that unlocks audio; start the tune.
+        this.music!.start();
       } else {
         return;
       }
@@ -183,6 +202,7 @@ export class GameScene extends Phaser.Scene {
     // still unpauses.
     if (this.inputManager.justPressedPause()) {
       this.state = this.state === 'paused' ? 'playing' : 'paused';
+      this.music!.setPaused(this.state === 'paused');
     }
     if (this.state === 'paused') {
       this.hud.setDanger(false); // don't leave the warning lingering over a pause
@@ -335,6 +355,7 @@ export class GameScene extends Phaser.Scene {
   /** End the run: freeze the sim and show the game-over summary with its cause. */
   private endRun(cause: string): void {
     this.state = 'gameover';
+    this.music?.stop();
     this.particles.emitExplosion(this.playerSprite.x, this.playerSprite.y);
     this.hud.showGameOver({
       distanceM: this.distanceMeters(),

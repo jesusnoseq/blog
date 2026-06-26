@@ -22,6 +22,7 @@ export class InputManager {
   private readonly keys: Record<KeyName, Phaser.Input.Keyboard.Key>;
   private readonly pauseKey: Phaser.Input.Keyboard.Key;
   private readonly restartKey: Phaser.Input.Keyboard.Key;
+  private readonly muteKey: Phaser.Input.Keyboard.Key;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -41,6 +42,7 @@ export class InputManager {
     };
     this.pauseKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.P);
     this.restartKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+    this.muteKey = kb.addKey(Phaser.Input.Keyboard.KeyCodes.M);
   }
 
   /** Current continuous movement intent for this frame. */
@@ -75,5 +77,10 @@ export class InputManager {
   /** True only on the frame R transitions from up to down. */
   justPressedRestart(): boolean {
     return Phaser.Input.Keyboard.JustDown(this.restartKey);
+  }
+
+  /** True only on the frame M transitions from up to down (toggles music). */
+  justPressedMute(): boolean {
+    return Phaser.Input.Keyboard.JustDown(this.muteKey);
   }
 }

@@ -111,6 +111,7 @@ export const CONFIG = {
         'A D / ← →    Steer',
         'P            Pause',
         'R            Restart',
+        'M            Music on/off',
       ],
       prompt: 'Press W or ↑ to launch',
       pulseMs: 600, // half-period of the prompt's blink (yoyo)
@@ -308,6 +309,23 @@ export const CONFIG = {
       sizeBlocks: 3,
       ramp: [PALETTE.white, PALETTE.yellow, PALETTE.orange, PALETTE.red, PALETTE.ember],
     },
+  },
+
+  // --- Music (procedural background tune; generated in code, no audio assets) ---
+  // An F-Zero-ish driving racer cut synthesised live via the Web Audio API.
+  // Tempo + per-voice mix live here; the note score is composition (in MusicSynth).
+  music: {
+    enabled: true, // master switch (also toggled live with M)
+    bpm: 165, // tempo — driving Eurobeat racing pace
+    masterVolume: 0.32, // overall level (0..1); deliberately background
+    sidechain: 0.34, // duck floor (0..1) the pumped bus dips to on each kick
+    bass: { type: 'sawtooth' as OscillatorType, volume: 0.2 }, // rolling 16th-note low end
+    lead: { type: 'sawtooth' as OscillatorType, volume: 0.12 }, // melody hook (vibrato + detune)
+    stab: { type: 'sawtooth' as OscillatorType, volume: 0.07 }, // offbeat supersaw brass hits
+    pad: { type: 'sawtooth' as OscillatorType, volume: 0.045 }, // wide shimmering chord bed
+    arp: { volume: 0.055 }, // FM-bell arpeggio
+    drums: { volume: 0.55 }, // kick/snare/hat bus level
+    reverb: { volume: 0.45 }, // gated-reverb return level (snare/crash splash)
   },
 
   // --- Feature flags (extension points for later milestones) ---
