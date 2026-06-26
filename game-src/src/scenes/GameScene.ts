@@ -11,8 +11,8 @@ import { HUD } from '../ui/HUD';
 import { SpriteFactory } from '../render/SpriteFactory';
 import { ParticleSystem } from '../render/ParticleSystem';
 
-/** Run lifecycle. (Menu arrives later; runs start in `playing` for now.) */
-type GameState = 'playing' | 'paused' | 'gameover';
+/** Run lifecycle. A run opens on the `ready` start screen and launches on thrust. */
+type GameState = 'ready' | 'playing' | 'paused' | 'gameover';
 
 // Camera-floor bound span. The crush floor is imposed by moving a Phaser camera
 // bound so only its *bottom* limit binds `scrollY`; these make the other three
@@ -70,14 +70,14 @@ export class GameScene extends Phaser.Scene {
   private nextSwatch = 0; // rotates AI body colours so each spawn looks different
   private spawnTimer = 0; // countdown (s) staggering respawns when below maxConcurrent
   private cameraFloorY = 0; // max allowed camera scrollY; ratchets up at minScrollSpeed
-  private state: GameState = 'playing';
+  private state: GameState = 'ready';
 
   constructor() {
     super('GameScene');
   }
 
   create(): void {
-    this.state = 'playing';
+    this.state = 'ready';
     this.accumulator = 0;
     this.survivalTime = 0;
     this.eliminatedCount = 0;
@@ -145,6 +145,9 @@ export class GameScene extends Phaser.Scene {
 
     // Prime the road around the starting view so chunk 0 is present on frame 1.
     this.road.update(cam.worldView);
+
+    // Open on the start screen: show the controls and wait for forward thrust.
+    this.hud.showControls();
   }
 
   update(_time: number, delta: number): void {
@@ -155,6 +158,18 @@ export class GameScene extends Phaser.Scene {
     }
 
     const dt = delta / 1000;
+
+    // Start screen: the world is staged but frozen until the player commands
+    // forward thrust (W / ↑ / gamepad). That press both launches the run and
+    // counts as this frame's thrust, so the rocket moves off immediately.
+    if (this.state === 'ready') {
+      if (this.inputManager.getState().thrust > 0) {
+        this.state = 'playing';
+        this.hud.hideControls();
+      } else {
+        return;
+      }
+    }
 
     // The run is over: the sim is halted, but keep ticking particles so the death
     // burst plays out under the overlay.

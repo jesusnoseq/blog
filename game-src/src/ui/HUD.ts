@@ -44,6 +44,10 @@ export class HUD {
   private readonly dangerText: Phaser.GameObjects.Text;
   private readonly dangerPulse: Phaser.Tweens.Tween;
   private dangerActive = false;
+  private readonly startTitle: Phaser.GameObjects.Text;
+  private readonly startControls: Phaser.GameObjects.Text;
+  private readonly startPrompt: Phaser.GameObjects.Text;
+  private readonly startPulse: Phaser.Tweens.Tween;
 
   constructor(scene: Phaser.Scene) {
     const h = CONFIG.hud;
@@ -143,6 +147,76 @@ export class HUD {
       repeat: -1,
       paused: true,
     });
+
+    // Start screen — controls listing + launch prompt over the dimming overlay,
+    // shown before the run begins and dismissed once the player thrusts forward.
+    const s = h.startScreen;
+    this.startTitle = scene.add
+      .text(cx, cy - h.titleFontSize * 3, s.title, {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.titleFontSize}px`,
+        color: s.titleColor,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    this.startControls = scene.add
+      .text(cx, cy, s.controls.join('\n'), {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.panelFontSize}px`,
+        color: s.controlsColor,
+        align: 'left',
+        lineSpacing: h.lineSpacing,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    this.startPrompt = scene.add
+      .text(cx, cy + h.titleFontSize * 3, s.prompt, {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.panelFontSize}px`,
+        color: s.promptColor,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    // Blink the launch prompt while the start screen is up (paused otherwise).
+    this.startPulse = scene.tweens.add({
+      targets: this.startPrompt,
+      alpha: { from: 1, to: 0.3 },
+      duration: s.pulseMs,
+      yoyo: true,
+      repeat: -1,
+      paused: true,
+    });
+  }
+
+  /** Show the start-screen controls overlay; hides the live stats + fuel bar. */
+  showControls(): void {
+    this.stats.setVisible(false);
+    this.fuelBar.setVisible(false);
+    this.overlay.setVisible(true);
+    this.startTitle.setVisible(true);
+    this.startControls.setVisible(true);
+    this.startPrompt.setVisible(true);
+    this.startPulse.restart();
+  }
+
+  /** Dismiss the start-screen overlay and reveal the live HUD (called on launch). */
+  hideControls(): void {
+    this.startPulse.pause();
+    this.overlay.setVisible(false);
+    this.startTitle.setVisible(false);
+    this.startControls.setVisible(false);
+    this.startPrompt.setVisible(false);
+    this.stats.setVisible(true);
+    this.fuelBar.setVisible(true);
   }
 
   /** Refresh the live stats readout. */

@@ -100,6 +100,22 @@ export const CONFIG = {
       borderColor: 0x3a3a52,
       borderWidth: 2,
     },
+    // Start screen — controls overlay shown before the run begins (launch on thrust).
+    startScreen: {
+      title: 'ROCKET RACE',
+      titleColor: '#49ff8e', // green, distinct from the red game-over title
+      controlsColor: '#cfe8ff',
+      promptColor: '#8fa8c8',
+      controls: [
+        'W / ↑        Thrust',
+        'A D / ← →    Steer',
+        'P            Pause',
+        'R            Restart',
+      ],
+      prompt: 'Press W or ↑ to launch',
+      pulseMs: 600, // half-period of the prompt's blink (yoyo)
+    },
+
     // Fall-behind warning — red band + text along the bottom when nearing the kill line.
     danger: {
       bandHeight: 90, // px tall red band hugging the bottom edge of the screen
