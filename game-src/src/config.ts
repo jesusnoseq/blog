@@ -5,7 +5,12 @@
  * here and nowhere else. Milestone 1 only needs rendering, camera and a
  * placeholder player; later milestones (physics, fuel, rocks, AI, combat,
  * difficulty, particles, leaderboard) extend this object.
+ *
+ * Colours come from the fixed retro {@link PALETTE} so the whole game stays
+ * cohesive — fields point at palette entries rather than carrying loose hex.
  */
+import { PALETTE } from './render/palette';
+
 export const CONFIG = {
   // --- Rendering / canvas (logical resolution; scaled to fit the window) ---
   width: 480,
@@ -29,10 +34,10 @@ export const CONFIG = {
     chunkHeight: 200, // px per chunk (must be a whole multiple of the dash period)
     aheadChunks: 2, // chunks generated beyond the top of view
     behindChunks: 1, // chunks kept below view before recycling
-    asphaltColor: 0x15151f, // dark asphalt, distinct from background void (#0a0a12)
-    boundaryColor: 0x49c5ff, // bright boundary lines — clearly visible
+    asphaltColor: PALETTE.asphalt, // dark asphalt, distinct from background void
+    boundaryColor: PALETTE.boundary, // bright boundary lines — clearly visible
     boundaryWidth: 4,
-    laneColor: 0x3a3a52, // centre dashed lane marking
+    laneColor: PALETTE.lane, // centre dashed lane marking
     laneWidth: 4,
     dashLength: 28,
     dashGap: 12, // dash period 40 divides chunkHeight 200 → seamless tiling
@@ -42,7 +47,7 @@ export const CONFIG = {
   // --- Player (visual) ---
   player: {
     size: 24,
-    color: 0x49c5ff,
+    color: PALETTE.boundary,
   },
 
   // --- Movement physics (tunable; balanced by feel per the M2 test gate) ---
@@ -117,8 +122,8 @@ export const CONFIG = {
     minGap: 84, // smallest passable opening (player is 24 wide → comfortable weave)
     clusterMin: 3, // rocks in a cluster pattern (inclusive range)
     clusterMax: 5,
-    color: 0x6b6b7a, // rock body — muted grey, reads against dark asphalt
-    outlineColor: 0x2a2a34, // 1–2px darker rim for shape readability
+    color: PALETTE.rock, // rock body — muted grey, reads against dark asphalt
+    outlineColor: PALETTE.rockOutline, // 1–2px darker rim for shape readability
     outlineWidth: 3,
   },
 
@@ -139,9 +144,9 @@ export const CONFIG = {
     interval: 6, // a pad every Nth chunk ahead (deterministic → always reachable)
     width: 100, // pad size px (narrow lane within the 360 corridor)
     height: 300, // pad extent along the chunk (long; of chunkHeight 200)
-    color: 0x1bd97b, // glowing green fill
+    color: PALETTE.fuel, // glowing green fill
     fillAlpha: 0.22,
-    borderColor: 0x49ff8e,
+    borderColor: PALETTE.fuelBright,
     borderWidth: 3,
   },
 
@@ -152,7 +157,7 @@ export const CONFIG = {
   ai: {
     count: 3,
     size: 24,
-    colors: [0xff8e49, 0xb96bff, 0x49ff8e], // ≥ count, all distinct from player blue
+    colors: [PALETTE.orange, 0xb96bff, PALETTE.fuelBright], // ≥ count, all distinct from player blue
     spawnSpreadX: 240, // x span across which the N AI start (within road width 360)
     spawnY: 40, // start a touch behind the player (start is y=0; +Y is behind)
     // Physics (mirrors CONFIG.physics; see RocketTuning).
@@ -202,7 +207,34 @@ export const CONFIG = {
     halfAngleDeg: 35, // cone half-angle from its axis (full spread = 70°)
     minSteer: 0.4, // |steerX| below this doesn't count as firing (ignore drift)
     pushAccel: 2400, // px/s^2 — peak push at point-blank, falls off linearly to 0 at range
-    debugCone: true, // draw active cones as translucent triangles (tuning aid)
+    debugCone: false, // draw active cones as translucent triangles (tuning aid; off for the polished art)
+  },
+
+  // --- Render (pixel-art sprite generation; all art is built from PALETTE) ---
+  // Sprites are generated once onto offscreen canvases at final size using chunky
+  // `pixelScale`-sized blocks (crisp nearest-neighbour, no fractional-scale blur),
+  // cached by key, and never regenerated per frame. See SpriteFactory.
+  render: {
+    pixelScale: 3, // screen px per art "pixel" (the chunky-block size / integer upscale)
+    rocket: {
+      gridW: 9, // art-pixel grid width (final px = gridW * pixelScale) — odd for a centred nose
+      gridH: 13, // art-pixel grid height
+      playerSwatch: 0, // index into ROCKET_SWATCHES (0 = player blue)
+      aiSwatches: [1, 2, 3], // one swatch per AI; ≥ ai.count, all distinct from the player
+      bankDeg: 12, // max sprite tilt when steering (visual only; rocket still flies up)
+    },
+    rock: {
+      variants: 4, // distinct seeded boulder shapes (cached per variant + radius)
+    },
+    void: {
+      tileSize: 64, // px of the tiling star/void texture outside the road
+      parallax: 0.3, // fraction of camera scroll the starfield drifts (0 = fixed)
+      starCount: 18, // stars sprinkled per void tile
+    },
+    fuelPad: {
+      frames: 6, // brightness steps in the palette-cycle pulse spritesheet
+      frameRateMs: 110, // ms per frame of the 'fuelPulse' loop
+    },
   },
 
   // --- Score (survival + ranking blend) ---

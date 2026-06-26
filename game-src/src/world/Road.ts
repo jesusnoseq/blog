@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CONFIG } from '../config';
 import { Chunk } from './Chunk';
 import { ProceduralGenerator } from './ProceduralGenerator';
+import type { SpriteFactory } from '../render/SpriteFactory';
 
 /**
  * Road — the infinite vertical corridor.
@@ -14,12 +15,14 @@ import { ProceduralGenerator } from './ProceduralGenerator';
  */
 export class Road {
   private readonly scene: Phaser.Scene;
+  private readonly sprites: SpriteFactory;
   private readonly generator = new ProceduralGenerator();
   private readonly active = new Map<number, Chunk>();
   private readonly pool: Chunk[] = [];
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, sprites: SpriteFactory) {
     this.scene = scene;
+    this.sprites = sprites;
   }
 
   /**
@@ -120,7 +123,7 @@ export class Road {
   }
 
   private acquire(): Chunk {
-    return this.pool.pop() ?? new Chunk(this.scene);
+    return this.pool.pop() ?? new Chunk(this.scene, this.sprites);
   }
 
   private release(chunk: Chunk): void {

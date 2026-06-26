@@ -8,6 +8,7 @@ import { AIRocket } from '../entities/AIRocket';
 import type { AIPerception, FuelTarget, RockHit } from '../entities/AIRocket';
 import { Road } from '../world/Road';
 import { HUD } from '../ui/HUD';
+import { SpriteFactory } from '../render/SpriteFactory';
 
 /** Run lifecycle. (Menu arrives later; runs start in `playing` for now.) */
 type GameState = 'playing' | 'paused' | 'gameover';
@@ -36,11 +37,14 @@ const CAMERA_BOUND_SPAN = 2e8;
 export class GameScene extends Phaser.Scene {
   // NOTE: `input` is reserved by Phaser.Scene, so the manager is `inputManager`.
   private inputManager!: InputManager;
+  private sprites!: SpriteFactory;
   private player!: PlayerRocket;
-  private playerRect!: Phaser.GameObjects.Rectangle;
+  private playerSprite!: Phaser.GameObjects.Image;
+  // Tiling starfield drawn in the void outside the road; drifts with the camera.
+  private voidBg!: Phaser.GameObjects.TileSprite;
   // AI opponents and their visuals, kept index-aligned; both shrink on elimination.
   private ais: AIRocket[] = [];
-  private aiRects: Phaser.GameObjects.Rectangle[] = [];
+  private aiSprites: Phaser.GameObjects.Image[] = [];
   // Per-frame scratch reused across frames (cleared, not reallocated) so AI
   // perception doesn't grow garbage: the shared rock/fuel snapshots and AI inputs.
   private readonly rockScratch: RockHit[] = [];
@@ -74,8 +78,18 @@ export class GameScene extends Phaser.Scene {
     this.survivalTime = 0;
     this.eliminatedCount = 0;
 
-    // Road is created first so the player draws on top of it.
-    this.road = new Road(this);
+    // SpriteFactory generates + caches every pixel-art texture once, up front.
+    this.sprites = new SpriteFactory(this);
+
+    // Tiling starfield behind the road, locked to the camera (drifts in update).
+    this.voidBg = this.add
+      .tileSprite(0, 0, CONFIG.width, CONFIG.height, SpriteFactory.VOID_TILE)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(CONFIG.road.depth - 1);
+
+    // Road is created next so the player draws on top of it.
+    this.road = new Road(this, this.sprites);
 
     // Cone-push debug overlay sits just above the road, below the rockets.
     this.coneGfx = this.add.graphics().setDepth(CONFIG.road.depth + 1);
@@ -83,35 +97,29 @@ export class GameScene extends Phaser.Scene {
     this.player = new PlayerRocket(0, 0);
     this.player.maxFuel = CONFIG.fuel.max;
     this.player.fuel = CONFIG.fuel.start;
-    this.playerRect = this.add.rectangle(
-      0,
-      0,
-      CONFIG.player.size,
-      CONFIG.player.size,
-      CONFIG.player.color,
-    );
+    this.playerSprite = this.add.image(0, 0, this.sprites.rocketKey(CONFIG.render.rocket.playerSwatch));
 
     // Spawn the AI field. Fresh arrays each create() so a restart doesn't retain
     // references to the previous run's (now destroyed) rockets/rects. They start
     // spread across the corridor a touch behind the player, in the rock-free safe
     // zone (chunk 0 and ahead are kept clear by the generator).
     this.ais = [];
-    this.aiRects = [];
+    this.aiSprites = [];
     const a = CONFIG.ai;
+    const swatches = CONFIG.render.rocket.aiSwatches;
     for (let i = 0; i < a.count; i++) {
       const x = a.spawnSpreadX * ((i + 0.5) / a.count - 0.5);
       const ai = new AIRocket(x, a.spawnY);
       ai.maxFuel = a.maxFuel;
       ai.fuel = a.startFuel;
       this.ais.push(ai);
-      this.aiRects.push(
-        this.add.rectangle(x, a.spawnY, a.size, a.size, a.colors[i % a.colors.length]),
-      );
+      const key = this.sprites.rocketKey(swatches[i % swatches.length]);
+      this.aiSprites.push(this.add.image(x, a.spawnY, key));
     }
 
     const cam = this.cameras.main;
     cam.setBackgroundColor(CONFIG.backgroundColor);
-    cam.startFollow(this.playerRect, true, CONFIG.camera.lerp, CONFIG.camera.lerp);
+    cam.startFollow(this.playerSprite, true, CONFIG.camera.lerp, CONFIG.camera.lerp);
     cam.setDeadzone(CONFIG.camera.deadzoneWidth, CONFIG.camera.deadzoneHeight);
     // Lean the view "forward" (up) so the player sits lower and sees ahead.
     cam.setFollowOffset(0, CONFIG.camera.lookahead);
@@ -192,13 +200,20 @@ export class GameScene extends Phaser.Scene {
     }
 
     // Render at the interpolated position between the two latest physics states.
+    // Rockets bank (tilt) toward their steer for arcade feel — visual only.
     const alpha = this.accumulator / CONFIG.physics.fixedStep;
-    this.playerRect.x = this.player.getRenderX(alpha);
-    this.playerRect.y = this.player.getRenderY(alpha);
+    const bank = Phaser.Math.DegToRad(CONFIG.render.rocket.bankDeg);
+    this.playerSprite.x = this.player.getRenderX(alpha);
+    this.playerSprite.y = this.player.getRenderY(alpha);
+    this.playerSprite.rotation = input.steerX * bank;
     for (let i = 0; i < this.ais.length; i++) {
-      this.aiRects[i].x = this.ais[i].getRenderX(alpha);
-      this.aiRects[i].y = this.ais[i].getRenderY(alpha);
+      this.aiSprites[i].x = this.ais[i].getRenderX(alpha);
+      this.aiSprites[i].y = this.ais[i].getRenderY(alpha);
+      this.aiSprites[i].rotation = aiInputs[i].steerX * bank;
     }
+
+    // Drift the starfield with the camera (parallax) so the void feels alive.
+    this.voidBg.tilePositionY = this.cameras.main.scrollY * CONFIG.render.void.parallax;
 
     // Camera floor (scroll-crush): ratchet the max allowed scrollY up by at least
     // minScrollSpeed each frame and never let it fall back, imposed via a moving
@@ -327,8 +342,8 @@ export class GameScene extends Phaser.Scene {
       const crushed = CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(ai, bottomEdge);
       if (offRoad || crushed) {
         this.eliminatedCount++; // every opponent death counts toward the kill score
-        this.aiRects[i].destroy();
-        this.aiRects.splice(i, 1);
+        this.aiSprites[i].destroy();
+        this.aiSprites.splice(i, 1);
         this.ais.splice(i, 1);
       }
     }
