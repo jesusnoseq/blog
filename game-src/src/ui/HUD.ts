@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config';
+import type { ScoreEntry } from './Leaderboard';
 
 /** Live run stats shown top-left while playing. */
 export interface HudStats {
   distanceM: number; // forward progress, metres
   speed: number; // current speed, metres per second
   score: number; // running score (survival + ranking blend)
+  best: number; // best score on record (or this run's, whichever is higher)
   opponents: number; // AI rockets still alive
   eliminated: number; // opponents you've eliminated this run
 }
@@ -17,6 +19,13 @@ export interface GameOverStats {
   score: number;
   eliminated: number; // opponents eliminated this run
   cause: string; // why the run ended (e.g. "Off the road", "Out of fuel")
+}
+
+/** The leaderboard slice shown under the run summary on game-over. */
+export interface GameOverBoard {
+  entries: ScoreEntry[]; // top entries, high→low (already capped for display)
+  rank: number; // this run's 1-based rank, or 0 if it didn't place
+  saved: boolean; // false → storage unavailable, scores won't survive a reload
 }
 
 /**
@@ -39,6 +48,8 @@ export class HUD {
   private readonly title: Phaser.GameObjects.Text;
   private readonly cause: Phaser.GameObjects.Text;
   private readonly summary: Phaser.GameObjects.Text;
+  private readonly boardTitle: Phaser.GameObjects.Text;
+  private readonly board: Phaser.GameObjects.Text;
   private readonly prompt: Phaser.GameObjects.Text;
   private readonly dangerBand: Phaser.GameObjects.Rectangle;
   private readonly dangerText: Phaser.GameObjects.Text;
@@ -107,13 +118,38 @@ export class HUD {
       .setDepth(h.depth)
       .setVisible(false);
 
+    // High-score table under the run summary (heading + the top-N rows).
+    this.boardTitle = scene.add
+      .text(cx, cy + h.titleFontSize * 3, 'HIGH SCORES', {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.panelFontSize}px`,
+        color: h.causeColor,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
+    this.board = scene.add
+      .text(cx, cy + h.titleFontSize * 3 + h.panelFontSize * 1.6, '', {
+        fontFamily: h.fontFamily,
+        fontSize: `${h.panelFontSize}px`,
+        color: h.panelColor,
+        align: 'left',
+        lineSpacing: h.lineSpacing,
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(h.depth)
+      .setVisible(false);
+
     this.prompt = scene.add
-      .text(cx, cy + h.titleFontSize * 2, 'Press R to restart', {
+      .text(cx, CONFIG.height - h.padding, 'Press R to restart', {
         fontFamily: h.fontFamily,
         fontSize: `${h.panelFontSize}px`,
         color: h.promptColor,
       })
-      .setOrigin(0.5, -0.2)
+      .setOrigin(0.5, 1)
       .setScrollFactor(0)
       .setDepth(h.depth)
       .setVisible(false);
@@ -220,11 +256,12 @@ export class HUD {
   }
 
   /** Refresh the live stats readout. */
-  setStats({ distanceM, speed, score, opponents, eliminated }: HudStats): void {
+  setStats({ distanceM, speed, score, best, opponents, eliminated }: HudStats): void {
     this.stats.setText([
       `DIST  ${Math.floor(distanceM)} m`,
       `SPEED ${Math.round(speed)} m/s`,
       `SCORE ${score}`,
+      `BEST  ${best}`,
       `OPP   ${opponents}`,
       `KILLS ${eliminated}`,
     ]);
@@ -259,8 +296,11 @@ export class HUD {
     }
   }
 
-  /** Show the game-over overlay with the run summary; hides the live stats + bar. */
-  showGameOver({ distanceM, timeS, score, eliminated, cause }: GameOverStats): void {
+  /** Show the game-over overlay with the run summary + high scores; hides the live HUD. */
+  showGameOver(
+    { distanceM, timeS, score, eliminated, cause }: GameOverStats,
+    board: GameOverBoard,
+  ): void {
     this.setDanger(false);
     this.stats.setVisible(false);
     this.fuelBar.setVisible(false);
@@ -271,10 +311,29 @@ export class HUD {
       `Eliminated ${eliminated}`,
       `Score      ${score}`,
     ]);
+    this.boardTitle.setText(board.saved ? 'HIGH SCORES' : 'HIGH SCORES (not saved)');
+    this.board.setText(this.formatBoard(board));
     this.overlay.setVisible(true);
     this.title.setVisible(true);
     this.cause.setVisible(true);
     this.summary.setVisible(true);
+    this.boardTitle.setVisible(true);
+    this.board.setVisible(true);
     this.prompt.setVisible(true);
+  }
+
+  /**
+   * Format the high-score rows as monospace columns (rank · score · distance).
+   * The just-finished run is flagged with a leading '▶' so the player can spot
+   * their placement; an empty board reads as a single placeholder line.
+   */
+  private formatBoard({ entries, rank }: GameOverBoard): string[] {
+    if (entries.length === 0) return ['  no scores yet — finish a run!'];
+    return entries.map((e, i) => {
+      const here = i + 1 === rank ? '▶' : ' ';
+      const place = `${i + 1}`.padStart(2, ' ');
+      const pts = `${e.score}`.padStart(7, ' ');
+      return `${here}${place}. ${pts}   ${Math.floor(e.distanceM)} m`;
+    });
   }
 }

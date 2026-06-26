@@ -8,6 +8,8 @@ import { AIRocket } from '../entities/AIRocket';
 import type { AIPerception, FuelTarget, RockHit } from '../entities/AIRocket';
 import { Road } from '../world/Road';
 import { HUD } from '../ui/HUD';
+import { Leaderboard } from '../ui/Leaderboard';
+import { applyCrt, loadCrtPref, saveCrtPref } from '../ui/crt';
 import { SpriteFactory } from '../render/SpriteFactory';
 import { ParticleSystem } from '../render/ParticleSystem';
 import { MusicSynth } from '../audio/MusicSynth';
@@ -65,6 +67,11 @@ export class GameScene extends Phaser.Scene {
   private particles!: ParticleSystem;
   private road!: Road;
   private hud!: HUD;
+  // Local high-score table. Re-read from storage each create() so a restart picks
+  // up the score the previous run just submitted.
+  private leaderboard!: Leaderboard;
+  // CRT (scanline + vignette) overlay state; persisted, toggled live with V.
+  private crtOn = false;
   // Procedural background music. Created once and kept across restarts (a single
   // AudioContext is reused — browsers cap how many you may open), so it's `?`
   // and lazily initialised rather than rebuilt each create().
@@ -148,6 +155,14 @@ export class GameScene extends Phaser.Scene {
     this.inputManager = new InputManager(this);
     this.hud = new HUD(this);
 
+    // Local leaderboard (best score → HUD, top-5 → game-over) + the CRT overlay
+    // preference. Both degrade gracefully when localStorage is unavailable. The
+    // board is kept across restarts (like `music`) so in-memory scores survive a
+    // restart even when storage is down; with storage it's the same data anyway.
+    if (!this.leaderboard) this.leaderboard = new Leaderboard();
+    this.crtOn = loadCrtPref();
+    applyCrt(this.crtOn);
+
     // Music persists across restarts (one shared AudioContext); ensure it's
     // silent on the start screen — it launches with the run, on first thrust.
     if (!this.music) this.music = new MusicSynth();
@@ -172,6 +187,13 @@ export class GameScene extends Phaser.Scene {
       const on = !this.music!.isEnabled();
       this.music!.setEnabled(on);
       if (on && this.state === 'playing') this.music!.start();
+    }
+
+    // V toggles the CRT scanline/vignette overlay at any time (preference saved).
+    if (this.inputManager.justPressedCrt()) {
+      this.crtOn = !this.crtOn;
+      applyCrt(this.crtOn);
+      saveCrtPref(this.crtOn);
     }
 
     const dt = delta / 1000;
@@ -325,10 +347,12 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    const score = this.score();
     this.hud.setStats({
       distanceM: this.distanceMeters(),
       speed: speed / CONFIG.hud.pixelsPerMeter,
-      score: this.score(),
+      score,
+      best: Math.max(this.leaderboard.best(), score),
       opponents: this.ais.length,
       eliminated: this.eliminatedCount,
     });
@@ -352,18 +376,25 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** End the run: freeze the sim and show the game-over summary with its cause. */
+  /** End the run: freeze the sim, record the score, and show the game-over summary. */
   private endRun(cause: string): void {
     this.state = 'gameover';
     this.music?.stop();
     this.particles.emitExplosion(this.playerSprite.x, this.playerSprite.y);
-    this.hud.showGameOver({
-      distanceM: this.distanceMeters(),
-      timeS: this.survivalTime,
-      score: this.score(),
-      eliminated: this.eliminatedCount,
-      cause,
+
+    const distanceM = this.distanceMeters();
+    const score = this.score();
+    // Record the run, then read back the top slice + this run's placement.
+    const rank = this.leaderboard.submit({
+      score,
+      distanceM,
+      date: new Date().toISOString().slice(0, 10),
     });
+
+    this.hud.showGameOver(
+      { distanceM, timeS: this.survivalTime, score, eliminated: this.eliminatedCount, cause },
+      { entries: this.leaderboard.top(), rank, saved: this.leaderboard.persistent },
+    );
   }
 
   /**

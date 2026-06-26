@@ -90,7 +90,7 @@ export const CONFIG = {
     // Fuel bar — sits under the live stats text, top-left.
     fuelBar: {
       x: 12,
-      y: 126, // below the 5-line stats readout (DIST/SPEED/SCORE/OPP/KILLS)
+      y: 150, // below the 6-line stats readout (DIST/SPEED/SCORE/BEST/OPP/KILLS)
       width: 160,
       height: 14,
       bgColor: 0x1f1f2e, // empty-tank track
@@ -112,6 +112,7 @@ export const CONFIG = {
         'P            Pause',
         'R            Restart',
         'M            Music on/off',
+        'V            Scanlines',
       ],
       prompt: 'Press W or ↑ to launch',
       pulseMs: 600, // half-period of the prompt's blink (yoyo)
@@ -270,6 +271,24 @@ export const CONFIG = {
   score: {
     timeScore: 5, // points per second survived (the `k`)
     killBonus: 250, // points per opponent eliminated (the `BONUS`)
+  },
+
+  // --- Leaderboard (local top-N high scores, persisted to localStorage) ---
+  // Best score shows on the live HUD; the top `displayCount` show on game-over.
+  // Storage is best-effort — the board degrades to in-memory if it's unavailable.
+  leaderboard: {
+    storageKey: 'rocketRacer.scores.v1',
+    topN: 10, // entries kept on the persisted board
+    displayCount: 5, // entries shown on the game-over overlay
+  },
+
+  // --- CRT overlay (optional scanline + vignette post-effect; default off) ---
+  // Pure-CSS layer in index.html toggled by a body class (see ui/crt.ts); the
+  // preference is persisted. Toggle live with V.
+  crt: {
+    storageKey: 'rocketRacer.crt.v1',
+    bodyClass: 'crt-on', // index.html CSS keys the overlay off this class on <body>
+    defaultOn: false,
   },
 
   // --- Particles (pooled square pixels; palette-stepped fade, no alpha blur) ---
