@@ -67,6 +67,8 @@ export class GameScene extends Phaser.Scene {
   private accumulator = 0;
   private survivalTime = 0; // seconds elapsed while playing (frozen on pause/death)
   private eliminatedCount = 0; // opponents you've eliminated this run (scores killBonus each)
+  private nextSwatch = 0; // rotates AI body colours so each spawn looks different
+  private spawnTimer = 0; // countdown (s) staggering respawns when below maxConcurrent
   private cameraFloorY = 0; // max allowed camera scrollY; ratchets up at minScrollSpeed
   private state: GameState = 'playing';
 
@@ -79,6 +81,8 @@ export class GameScene extends Phaser.Scene {
     this.accumulator = 0;
     this.survivalTime = 0;
     this.eliminatedCount = 0;
+    this.nextSwatch = 0;
+    this.spawnTimer = 0;
 
     // SpriteFactory generates + caches every pixel-art texture once, up front.
     this.sprites = new SpriteFactory(this);
@@ -105,21 +109,24 @@ export class GameScene extends Phaser.Scene {
     this.playerSprite = this.add.image(0, 0, this.sprites.rocketKey(CONFIG.render.rocket.playerSwatch));
 
     // Spawn the AI field. Fresh arrays each create() so a restart doesn't retain
-    // references to the previous run's (now destroyed) rockets/rects. They start
-    // spread across the corridor a touch behind the player, in the rock-free safe
-    // zone (chunk 0 and ahead are kept clear by the generator).
+    // references to the previous run's (now destroyed) rockets/rects. The field is
+    // maintained at maxConcurrent and replacements appear *ahead* of the player
+    // (see spawnAI). Seed a full field: a couple start beside the player (flanking
+    // it left/right at the same height) so the race feels contested from frame one,
+    // the rest start ahead.
     this.ais = [];
     this.aiSprites = [];
-    const a = CONFIG.ai;
-    const swatches = CONFIG.render.rocket.aiSwatches;
-    for (let i = 0; i < a.count; i++) {
-      const x = a.spawnSpreadX * ((i + 0.5) / a.count - 0.5);
-      const ai = new AIRocket(x, a.spawnY);
-      ai.maxFuel = a.maxFuel;
-      ai.fuel = a.startFuel;
-      this.ais.push(ai);
-      const key = this.sprites.rocketKey(swatches[i % swatches.length]);
-      this.aiSprites.push(this.add.image(x, a.spawnY, key));
+    const flank = CONFIG.ai.startAlongside;
+    const side = CONFIG.ai.startSideX;
+    for (let i = 0; i < CONFIG.ai.maxConcurrent; i++) {
+      if (i < flank) {
+        // Spread the flankers symmetrically across [-side, +side] at the player's
+        // height; with 2 that's exactly one on each side.
+        const x = flank > 1 ? -side + (2 * side * i) / (flank - 1) : 0;
+        this.spawnAIAt(x, this.player.y);
+      } else {
+        this.spawnAI();
+      }
     }
 
     const cam = this.cameras.main;
@@ -270,6 +277,9 @@ export class GameScene extends Phaser.Scene {
     // run. Iterate back-to-front so removals don't skip entries.
     this.eliminateDeadAI(bottomEdge);
 
+    // Refill the field: spawn fresh opponents ahead, staggered, up to maxConcurrent.
+    this.maintainField(dt);
+
     // Warn before the crush: the player's body is within the danger band of the edge.
     this.hud.setDanger(bottomEdge - this.player.y < CONFIG.camera.dangerBand);
 
@@ -365,23 +375,86 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Remove any AI eliminated this frame (off-road or fallen behind the crush),
-   * hiding its rectangle. Walks back-to-front so the index-aligned splices don't
-   * skip survivors. Does not touch run state — only the player can end the run.
+   * Remove any AI that left play this frame and let {@link maintainField} refill
+   * the slot ahead. Three exits: off-road, fallen behind the crush, or pulled too
+   * far ahead (silently recycled to keep the stream near the player). Only a death
+   * caused by combat — eliminated within `combatCreditWindow` of an exhaust-cone
+   * push — scores `killBonus` and plays the explosion; natural fall-behind /
+   * off-road / far-ahead removals are silent. Walks back-to-front so the
+   * index-aligned splices don't skip survivors. Never ends the player's run.
    */
   private eliminateDeadAI(bottomEdge: number): void {
     for (let i = this.ais.length - 1; i >= 0; i--) {
       const ai = this.ais[i];
       const offRoad = CONFIG.ELIMINATE_ON_OFFROAD && this.road.isOffRoad(ai.x);
       const crushed = CONFIG.ELIMINATE_ON_BOTTOM && this.hasFallenBehind(ai, bottomEdge);
-      if (offRoad || crushed) {
-        this.eliminatedCount++; // every opponent death counts toward the kill score
+      const tooFarAhead = this.player.y - ai.y > CONFIG.ai.despawnAheadDist;
+      if (!(offRoad || crushed || tooFarAhead)) continue;
+
+      // Credit a kill only when a recent cone push drove this elimination.
+      const combatKill =
+        (offRoad || crushed) &&
+        this.survivalTime - ai.lastPushedTime <= CONFIG.combat.combatCreditWindow;
+      if (combatKill) {
+        this.eliminatedCount++;
         this.particles.emitExplosion(this.aiSprites[i].x, this.aiSprites[i].y);
-        this.aiSprites[i].destroy();
-        this.aiSprites.splice(i, 1);
-        this.ais.splice(i, 1);
       }
+      this.aiSprites[i].destroy();
+      this.aiSprites.splice(i, 1);
+      this.ais.splice(i, 1);
     }
+  }
+
+  /**
+   * Keep the opponent field populated. While below `maxConcurrent`, count down a
+   * stagger timer and spawn one fresh opponent ahead each time it elapses, so
+   * replacements trickle in rather than popping in all at once. When the field is
+   * full, hold the timer at a fresh random delay so the next freed slot still waits.
+   */
+  private maintainField(dt: number): void {
+    if (this.ais.length >= CONFIG.ai.maxConcurrent) {
+      this.spawnTimer = Phaser.Math.FloatBetween(CONFIG.ai.spawnDelayMin, CONFIG.ai.spawnDelayMax);
+      return;
+    }
+    this.spawnTimer -= dt;
+    if (this.spawnTimer <= 0) {
+      this.spawnAI();
+      this.spawnTimer = Phaser.Math.FloatBetween(CONFIG.ai.spawnDelayMin, CONFIG.ai.spawnDelayMax);
+    }
+  }
+
+  /**
+   * Spawn one AI opponent ahead of the player (forward = -Y), at a random on-road
+   * lane, cruising forward so it races with the field instead of being instantly
+   * overtaken. Picks a random on-road lane a random distance ahead (-Y) within
+   * `aheadMin`/`aheadMax`, then defers to {@link spawnAIAt}.
+   */
+  private spawnAI(
+    aheadMin: number = CONFIG.ai.spawnAheadMin,
+    aheadMax: number = CONFIG.ai.spawnAheadMax,
+  ): void {
+    const halfX = this.road.halfWidth - CONFIG.ai.edgeMargin;
+    const x = Phaser.Math.FloatBetween(-halfX, halfX);
+    const y = this.player.y - Phaser.Math.FloatBetween(aheadMin, aheadMax);
+    this.spawnAIAt(x, y);
+  }
+
+  /**
+   * Place one AI opponent at an exact world position, cruising forward. Each spawn
+   * cycles to the next body colour so respawns/flankers look distinct. Pushes the
+   * rocket and its sprite in lockstep (the arrays stay index-aligned).
+   */
+  private spawnAIAt(x: number, y: number): void {
+    const a = CONFIG.ai;
+    const ai = new AIRocket(x, y);
+    ai.maxFuel = a.maxFuel;
+    ai.fuel = a.startFuel;
+    ai.vy = -a.spawnSpeed; // already cruising forward (-Y)
+    this.ais.push(ai);
+
+    const swatches = CONFIG.render.rocket.aiSwatches;
+    const swatch = swatches[this.nextSwatch++ % swatches.length];
+    this.aiSprites.push(this.add.image(x, y, this.sprites.rocketKey(swatch)));
   }
 
   /**
@@ -435,6 +508,8 @@ export class GameScene extends Phaser.Scene {
         const accel = c.pushAccel * (1 - dist / c.range) * dt;
         tgt.vx += nx * accel;
         tgt.vy += ny * accel;
+        // Tag the hit so an elimination shortly after is credited as a combat kill.
+        tgt.lastPushedTime = this.survivalTime;
       }
     }
   }

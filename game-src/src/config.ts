@@ -24,7 +24,7 @@ export const CONFIG = {
     lerp: 0.1, // follow smoothing, 0..1 (lower = smoother/laggier)
     deadzoneWidth: 800,
     deadzoneHeight: 140,
-    minScrollSpeed: 220, // px/s — the view always advances up at least this fast (never reverses)
+    minScrollSpeed: 300, // px/s — the view always advances up at least this fast (never reverses)
     dangerBand: 160, // px above the bottom edge where the "falling behind" warning shows
   },
 
@@ -155,17 +155,27 @@ export const CONFIG = {
   // AI can be balanced independently (RocketTuning is per-rocket by design). The
   // navigation knobs drive the racing/refuelling state machine in AIRocket.think.
   ai: {
-    count: 3,
+    maxConcurrent: 4, // target field size + hard cap on concurrent opponents
     size: 24,
     colors: [PALETTE.orange, 0xb96bff, PALETTE.fuelBright], // ≥ count, all distinct from player blue
     spawnSpreadX: 240, // x span across which the N AI start (within road width 360)
-    spawnY: 40, // start a touch behind the player (start is y=0; +Y is behind)
+    // Continuous spawning: opponents always appear *ahead* of the player (forward = -Y).
+    spawnAheadMin: 600, // min px ahead of the player a new opponent appears
+    spawnAheadMax: 1000, // max px ahead (near/just beyond the top of the ~800px view)
+    // Run start: a few opponents begin level with the player, flanking it left/right
+    // at the same height (rest spawn ahead). 2 → one each side; more → spread across.
+    startAlongside: 2, // opponents that start beside the player at run start
+    startSideX: 120, // px from centre of the outermost flanking starters (within the corridor)
+    despawnAheadDist: 1400, // px ahead beyond which an opponent is silently recycled (> spawnAheadMax)
+    spawnDelayMin: 0.8, // s — min stagger between respawns when below maxConcurrent
+    spawnDelayMax: 1.8, // s — max stagger between respawns
+    spawnSpeed: 540, // px/s forward (-Y) seeded on a new opponent so it cruises with the field
     // Physics (mirrors CONFIG.physics; see RocketTuning).
     forwardAccel: 1400,
     lateralAccel: 1100,
     longitudinalDrag: 0.8,
     lateralDrag: 3.0,
-    maxSpeed: 600,
+    maxSpeed: 570,
     // Navigation.
     lookahead: 280, // px ahead (-Y) to scan for threatening rocks
     avoidClearance: 40, // px lateral margin to clear a rock's radius when dodging
@@ -173,8 +183,8 @@ export const CONFIG = {
     steerGain: 0.02, // maps (targetX - x) px → steerX before clamp to [-1, 1]
     refuelFraction: 0.35, // tank below this → divert to the nearest fuel pad
     resumeFraction: 0.85, // tank above this → resume racing (hysteresis)
-    maxFuel: 100,
-    startFuel: 100,
+    maxFuel: 200,
+    startFuel: 999,
     // Combat: when to fire the exhaust cone at a rival (see CONFIG.combat for the
     // push physics; these gate only the AI's *decision* to engage).
     combatRange: 110, // px to a rival within which it's worth firing
@@ -207,6 +217,7 @@ export const CONFIG = {
     halfAngleDeg: 35, // cone half-angle from its axis (full spread = 70°)
     minSteer: 0.4, // |steerX| below this doesn't count as firing (ignore drift)
     pushAccel: 2400, // px/s^2 — peak push at point-blank, falls off linearly to 0 at range
+    combatCreditWindow: 0.6, // s — an elimination within this long of a cone push counts as a combat kill
     debugCone: false, // draw active cones as translucent triangles (tuning aid; off for the polished art)
   },
 
@@ -220,7 +231,7 @@ export const CONFIG = {
       gridW: 9, // art-pixel grid width (final px = gridW * pixelScale) — odd for a centred nose
       gridH: 13, // art-pixel grid height
       playerSwatch: 0, // index into ROCKET_SWATCHES (0 = player blue)
-      aiSwatches: [1, 2, 3], // one swatch per AI; ≥ ai.count, all distinct from the player
+      aiSwatches: [1, 2, 3, 4], // ≥ ai.maxConcurrent, all distinct from the player; cycled per spawn
       bankDeg: 12, // max sprite tilt when steering (visual only; rocket still flies up)
     },
     rock: {

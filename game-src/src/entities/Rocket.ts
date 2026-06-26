@@ -47,6 +47,13 @@ export class Rocket {
   /** Fuel level and capacity. Set by the owner; 0 = dead engine (no thrust). */
   fuel = 0;
   maxFuel = 0;
+  /**
+   * Run-clock time (seconds) this rocket was last shoved by an exhaust cone. The
+   * scene uses it to credit a combat kill: an elimination shortly after a push is
+   * scored, a natural one (just falling behind) is recycled silently. Defaults to
+   * -Infinity so an untouched rocket is never mistaken for a combat kill.
+   */
+  lastPushedTime = -Infinity;
 
   constructor(x = 0, y = 0) {
     this.x = x;
