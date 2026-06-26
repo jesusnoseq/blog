@@ -102,7 +102,7 @@ export const CONFIG = {
     },
     // Start screen — controls overlay shown before the run begins (launch on thrust).
     startScreen: {
-      title: 'ROCKET RACE',
+      title: 'ROCKET HORIZONS',
       titleColor: '#49ff8e', // green, distinct from the red game-over title
       controlsColor: '#cfe8ff',
       promptColor: '#8fa8c8',
