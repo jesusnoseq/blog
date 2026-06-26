@@ -15,7 +15,8 @@ function showSecret() {
   overlay.innerHTML =
     '<button id="secret-close">&times;</button>' +
     '<h1>You found me!</h1>' +
-    '<p>Congratulations, you unlocked the secret page.</p>';
+    '<p>Congratulations, you unlocked the secret game.</p>' +
+    '<iframe id="secret-game" src="/game/" title="Rocket Racer"></iframe>';
   document.body.appendChild(overlay);
 
   document.getElementById("secret-close").addEventListener("click", function () {
