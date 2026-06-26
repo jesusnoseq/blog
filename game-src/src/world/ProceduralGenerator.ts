@@ -27,10 +27,14 @@ export class ProceduralGenerator {
     }
 
     // Periodic refuel pad. Drawn first so any rocks land on top of it — rocks may
-    // share the chunk (and overlap the pad), so this does not short-circuit.
+    // share the chunk (and overlap the pad), so this does not short-circuit. The pad
+    // sits left/right/centre, jittered within the corridor but always fully on-road
+    // (its half-width kept clear of either ±halfWidth boundary).
     if (this.isFuelZone(index)) {
       const z = CONFIG.fuelZone;
-      chunk.addFuelZone(0, CONFIG.road.chunkHeight / 2, z.width, z.height);
+      const maxOffset = CONFIG.road.width / 2 - z.width / 2;
+      const x = this.rng.realInRange(-maxOffset, maxOffset);
+      chunk.addFuelZone(x, CONFIG.road.chunkHeight / 2, z.width, z.height);
     }
 
     if (this.rng.frac() > CONFIG.rocks.spawnChance) {
