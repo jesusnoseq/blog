@@ -74,7 +74,7 @@ La tabla muestra el plan mínimo que incluye acceso a agentes de código
 | ChatGPT (OpenAI)   | Plus         | 20€            | Web + IDE Extensions + CLI | Justa  | No compatible con herramientas de terceros   |
 | GitHub Copilot     | Pro          | 10€            | IDE + CLI                  | No     | Ligada a VSC. Incluye autocompletados y revisión de código en GitHub |
 | Cursor             | Pro          | 20€            | IDE                        | Justa  | Modo agente con buena integración con su IDE |
-| OpenCode Go        | Go           | 10€            | CLI + Desktop + API        | Sí     | $5 el primer mes. Modelos open source (GLM-5.1, DeepSeek V4, etc) |
+| OpenCode Go        | Go           | 10€            | CLI + Desktop + API        | Justa   | $5 el primer mes. Modelos open source (GLM-5.1, DeepSeek V4, etc) |
 | Trae               | Pro          | 10€            | IDE                        | Justa  | No compatible con herramientas de terceros   |
 | Devin Desktop      | Pro          | 20€            | IDE                        | No     | Antes Windsurf |
 | Google AI Plus     | Plus         | 22€            | API + Jules + Antigravity  | Justa  | Incluye Jules y Antigravity |
