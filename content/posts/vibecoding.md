@@ -58,7 +58,7 @@ La parte musical está hecha con el MCP de Resonant y convertida a webm con ffmp
 
 ### Despliegue y costes
 
-Por ahora, lo que he gastado en el juego han sido 10 € del dominio en Cloudflare y el coste de las suscripciones de IA en estas dos semanas, 20 € entre GPT y Claude. No solo he estado haciendo el juego así que digamos, otros 10-15 € de IA.
+Por ahora, lo que he gastado en el juego han sido 10 € del dominio en Cloudflare y el coste de las suscripciones de IA en estas dos semanas, 20 € entre GPT y Claude que costaría "medio mes". No solo he estado haciendo el juego así que digamos, otros 10-15 € de IA.
 
 En servidores por ahora he gastado 0. Estoy usando el mes gratuito de <https://railway.com/> para el servidor multijugador autoritativo. Lo mantendré vivo mientras haya gente jugando.
 Para el hosting web he usado Cloudflare, así que 0 €.
