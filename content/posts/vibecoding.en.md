@@ -1,12 +1,12 @@
 ---
-title: "Vibecoding"
+title: "Vibecoding a Videogame: Futboh"
 date: 2026-08-08T23:55:34+01:00
 draft: false
 tags: ["AI", "games", "webxr", "dev","vibecoding", "babylonjs"]
 categories: ["blog"]
 ---
 
-A couple of weeks ago I started the [Fuboh](https://fuboh.com/) project by vibecoding in my spare time. By the end of the first week I already had something playable online, and the second week has been about improvements. I could probably spend another week getting it properly polished.
+A couple of weeks ago I started the [Futboh](https://futboh.com/) project by vibecoding in my spare time. By the end of the first week I already had something playable online, and the second week has been about improvements. I could probably spend another week getting it properly polished.
 
 The game currently lets you play a few games of foosball from your browser using a keyboard (not recommended), a gamepad, or VR. It also includes several modes: versus AI, versus online or local players, and all their variants.
 
@@ -14,15 +14,15 @@ I have had a game like this in mind for a long time, and doing it the old-fashio
 
 ## Screenshots
 
-![Fuboh gameplay](/images/futboh-play.png)
+![Futboh gameplay](/images/futboh-play.png)
 
-![Fuboh online modes](/images/futboh-online-modes.png)
+![Futboh online modes](/images/futboh-online-modes.png)
 
-![Fuboh customization](/images/futboh-customize.png)
+![Futboh customization](/images/futboh-customize.png)
 
-![Fuboh scenario](/images/futboh-scenario.png)
+![Futboh scenario](/images/futboh-scenario.png)
 
-## Details about Fuboh.com
+## Details about Futboh.com
 
 When I saw that the domain was available, I did not think about it for long: I'm making it.
 Partly to try Opus 5, which had just come out, and partly to see the game I had in mind become real. I have no commercial intentions.

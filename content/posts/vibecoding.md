@@ -1,12 +1,12 @@
 ---
-title: "Vibecoding"
+title: "Vibecodeando un videojuego: Futboh"
 date: 2026-08-08T23:55:34+01:00
 draft: false
 tags: ["AI", "games", "webxr", "dev","vibecoding", "babylonjs"]
 categories: ["blog"]
 ---
 
-Hace un par de semanas empecé el proyecto de [Fuboh](https://fuboh.com/) haciendo vibecoding en mis ratos libres. En la primera semana ya tenía algo jugable online y la segunda ha sido de mejoras. Aún le podría dedicar otra semana más a dejarlo de verdad pulido.
+Hace un par de semanas empecé el proyecto de [Futboh](https://futboh.com/) haciendo vibecoding en mis ratos libres. En la primera semana ya tenía algo jugable online y la segunda ha sido de mejoras. Aún le podría dedicar otra semana más a dejarlo de verdad pulido.
 
 Actualmente el juego permite echar unas partidas de futbolín con teclado (no recomendable), gamepad y VR desde el navegador. También incluye unos cuantos modos: versus IA, versus jugadores online o en local, y todas sus variantes.
 
@@ -14,15 +14,15 @@ Hace tiempo que tenía un juego así en mente y hacerlo a la vieja usanza me hab
 
 ## Capturas
 
-![Partida de Fuboh](/images/futboh-play.png)
+![Partida de Futboh](/images/futboh-play.png)
 
-![Modos online de Fuboh](/images/futboh-online-modes.png)
+![Modos online de Futboh](/images/futboh-online-modes.png)
 
-![Personalización de Fuboh](/images/futboh-customize.png)
+![Personalización de Futboh](/images/futboh-customize.png)
 
-![Escenario de Fuboh](/images/futboh-scenario.png)
+![Escenario de Futboh](/images/futboh-scenario.png)
 
-## Detalles sobre Fuboh.com
+## Detalles sobre Futboh.com
 
 Cuando vi el dominio libre no me lo pensé mucho: lo hago.
 En parte para probar Opus 5 que acababa de salir y en parte para ver hecho el juego que tenía en mente. No tengo intenciones comerciales.
