@@ -15,7 +15,7 @@ Hace tiempo que tenía un juego así en mente y hacerlo a la vieja usanza me hab
 ## Detalles sobre Fuboh.com
 
 Cuando vi el dominio libre no me lo pensé mucho: lo hago.
-En parte para probar opus 5 que acababa de salir y en parte para ver hecho el juego que tenia en mente. No tengo intenciones comerciales.
+En parte para probar Opus 5 que acababa de salir y en parte para ver hecho el juego que tenía en mente. No tengo intenciones comerciales.
 
 Por ahora, mantengo el repositorio privado, no pienso que un proyecto vibecodeado aporte mucho en ese sentido.
 
@@ -29,9 +29,9 @@ He usado Claude Code y opencode, el MCP de [context7](https://context7.com/) y l
 
 Investigué qué tecnologías usar para hacerlo web y muy accesible. Di con Babylon.js como game engine, Rapier3D para las físicas y Colyseus para el multijugador. Hace unos años habría sido bastante más complicado hacerlo sin estas librerías extraordinarias y abiertas. Gracias por existir.
 
-El tiempo dedicado en total me es dificil de calcular, algunas veces le soltaba el prompt y me ponia a hacer otra cosa. Se podria decir que le he dedicado dos fines de semana de forma interrumpida.
+El tiempo dedicado en total me es difícil de calcular, algunas veces le soltaba el prompt y me ponía a hacer otra cosa. Se podría decir que le he dedicado dos fines de semana de forma intermitente.
 
-Despues de elegir tecnologias empiezo con la specificacion
+Después de elegir tecnologías empiezo con la especificación.
 
 #### Spec
 
@@ -40,15 +40,15 @@ Para cada escenario y música he tenido que hacer un prompt específico con sus 
 
 #### Prompts
 
-Generados por IA a partir de la spec refinada. Unos 10 en total, básicamente dividen cada apartado del videojuego; menus, controles, sonido, modelos 3D...
+Generados por IA a partir de la spec refinada. Unos 10 en total, básicamente dividen cada apartado del videojuego; menús, controles, sonido, modelos 3D...
 Con algunos prompts ha estado una hora trabajando solo. Al terminar solía abrir un nuevo chat para ir refinando los detalles que no funcionan bien y arreglando bugs antes de pasar al siguiente prompt.
 
 ### Estilo visual
 
 Teniendo que ser 3D, para navegador y jugable en VR, no hay muchas más opciones que usar low poly para asegurar el tiro y no tener que optimizar después. Es más, el juego no calcula sombras: las que ves son "artificiales", como si fuera un PNG estirado puesto directamente debajo de la pelota o de los muñecos.
 
-En el móvil, un Motorla edge 60 fusion, los FPS rondan los 50-70 y en PC con una RTX 4070 Ti casi llega a 300 deslimitando el navegador. Por defecto limitado a 144 FPS.
-Con unas meta quest 3 he podido jugar sin ningun problema, va fluido.
+En el móvil, un Motorola Edge 60 Fusion, los FPS rondan los 50-70 y en PC con una RTX 4070 Ti casi llega a 300 quitando el límite del navegador. Por defecto limitado a 144 FPS.
+Con unas Meta Quest 3 he podido jugar sin ningún problema, va fluido.
 
 ### Sonido
 
@@ -58,19 +58,19 @@ La parte musical está hecha con el MCP de Resonant y convertida a webm con ffmp
 
 ### Despliegue y costes
 
-Por ahora, lo que he gastado en el juego han sido 10€ del dominio en cloudflare y el coste de la suscripciones de IA en estas dos semanas, 40€/2 entre GPT y Claude. No solo he estado haciendo el juego así que digamos, otros 10-15€ de IA.
+Por ahora, lo que he gastado en el juego han sido 10 € del dominio en Cloudflare y el coste de las suscripciones de IA en estas dos semanas, 20 € entre GPT y Claude. No solo he estado haciendo el juego así que digamos, otros 10-15 € de IA.
 
-En servidores por ahora he gastado 0. Estoy usando el mes gratuito de <https://railway.com/> para el servidor multijugador autoritativo. Como el juego no tiene actividad ninguna seguramente lo cierre una vez me requiera coste.
-Para el hosting web he usado Cloudflare, así que 0€.
+En servidores por ahora he gastado 0. Estoy usando el mes gratuito de <https://railway.com/> para el servidor multijugador autoritativo. Lo mantendré vivo mientras haya gente jugando.
+Para el hosting web he usado Cloudflare, así que 0 €.
 
-En total 25€ redondeando por lo alto.
+En total 25 € redondeando por lo alto.
 
 ## Lecciones aprendidas
 
 Con este ya son unos cuantos proyectos que hago usando LLMs y diferentes herramientas para controlarlos.
 
 * Siempre he recomendado ir poquito a poco y teniendo el control sobre el código generado. Esto lo sigo recomendando, pero con una excepción: si simplemente quieres hacer un prototipo para ver si funciona y no te importa no tener el control, ya puedes ver que el resultado no es tan malo. Ten en mente que para hacer cualquier cambio, aunque sea mínimo, dependes de la IA o de tener tiempo para andar rebuscando en ficheros.
-* Recuperar el ownership del proyecto una vez perdido puede ser costoso. Requiere comprender codigo ajeno y siendo producto de un LLM probablemente algunas cosas parezca que tienen sentido, en verdad no lo tienen una vez profundizas.
+* Recuperar el ownership del proyecto una vez perdido puede ser costoso. Requiere comprender código ajeno y siendo producto de un LLM, probablemente algunas cosas que parezca tienen sentido, en verdad no lo tienen una vez profundizas.
 * Un LLM es capaz de resintetizar sonidos a partir de un fichero WAV. Mayor compresión que esa es complicada de conseguir.
 * También es capaz de diseñar en 3D escenarios, figuras y lo que haga falta. No esperes mucha definición ni que salga perfecto a la primera: es normal que ponga las caras del revés y veas el modelo negro.
 * El modo plan gasta muchos tokens, no siempre merece la pena. Con el juego del futbolín alcanzaba contextos de 150k o 300k tokens rápido.
