@@ -6,7 +6,7 @@ tags: ["AI", "games", "webxr", "dev","vibecoding", "babylonjs"]
 categories: ["blog"]
 ---
 
-Hace un par de semanas empecé el proyecto de <https://fuboh.com> haciendo vibecoding en mis ratos libres. En la primera semana ya tenía algo jugable online y la segunda ha sido de mejoras. Aún le podría dedicar otra semana más a dejarlo de verdad pulido.
+Hace un par de semanas empecé el proyecto de [Fuboh](https://fuboh.com/) haciendo vibecoding en mis ratos libres. En la primera semana ya tenía algo jugable online y la segunda ha sido de mejoras. Aún le podría dedicar otra semana más a dejarlo de verdad pulido.
 
 Actualmente el juego permite echar unas partidas de futbolín con teclado (no recomendable), gamepad y VR desde el navegador. También incluye unos cuantos modos: versus IA, versus jugadores online o en local, y todas sus variantes.
 
@@ -21,13 +21,13 @@ Por ahora, mantengo el repositorio privado, no pienso que un proyecto vibecodead
 
 ### Herramientas de IA
 
-El juego está vibecodeado usando Claude Code, mayormente con el modelo Claude Opus 5. Para el sonido, los escenarios y algunas mejoras del menú he usado Kimi K3 y GPT 5.6 (Sol y Luna).
+El juego está vibecodeado usando [Claude Code](https://github.com/anthropics/claude-code), mayormente con el modelo Claude Opus 5. Para el sonido, los escenarios y algunas mejoras del menú he usado Kimi K3 y GPT 5.6 (Sol y Luna).
 
-He usado Claude Code y opencode, el MCP de [context7](https://context7.com/) y las skills que me recomendó [autoskills](https://www.autoskills.sh/). Solo he tenido un CLAUDE.md; opencode hace fallback a él, así que no hace falta tener ambos.
+He usado [Claude Code](https://github.com/anthropics/claude-code) y [opencode](https://github.com/anomalyco/opencode), el MCP de [Context7](https://context7.com/) y las skills que me recomendó [autoskills](https://www.autoskills.sh/). Solo he tenido un CLAUDE.md; opencode hace fallback a él, así que no hace falta tener ambos.
 
 ### Proceso
 
-Investigué qué tecnologías usar para hacerlo web y muy accesible. Di con Babylon.js como game engine, Rapier3D para las físicas y Colyseus para el multijugador. Hace unos años habría sido bastante más complicado hacerlo sin estas librerías extraordinarias y abiertas. Gracias por existir.
+Investigué qué tecnologías usar para hacerlo web y muy accesible. Di con [Babylon.js](https://github.com/BabylonJS/Babylon.js) como game engine, [Rapier3D](https://github.com/dimforge/rapier/tree/master/typescript) para las físicas y [Colyseus](https://github.com/colyseus/colyseus) para el multijugador. Hace unos años habría sido bastante más complicado hacerlo sin estas librerías extraordinarias y abiertas. Gracias por existir.
 
 El tiempo dedicado en total me es difícil de calcular, algunas veces le soltaba el prompt y me ponía a hacer otra cosa. Se podría decir que le he dedicado dos fines de semana de forma intermitente.
 
@@ -54,14 +54,14 @@ Con unas Meta Quest 3 he podido jugar sin ningún problema, va fluido.
 
 Para el sonido he recortado un trozo de audio de una partida de futbolín, se lo he pasado a GPT 5.6 Sol y le he dicho que lo reproduzca programáticamente teniendo en cuenta la velocidad, etc. Ha hecho magia.
 
-La parte musical está hecha con el MCP de Resonant y convertida a webm con ffmpeg.
+La parte musical está hecha con el MCP de Resonant y convertida a webm con [ffmpeg](https://github.com/FFmpeg/FFmpeg).
 
 ### Despliegue y costes
 
-Por ahora, lo que he gastado en el juego han sido 10 € del dominio en Cloudflare y el coste de las suscripciones de IA en estas dos semanas, 20 € entre GPT y Claude que costaría "medio mes". No solo he estado haciendo el juego así que digamos, otros 10-15 € de IA.
+Por ahora, lo que he gastado en el juego han sido 10 € del dominio en [Cloudflare](https://www.cloudflare.com/) y el coste de las suscripciones de IA en estas dos semanas, 20 € entre GPT y Claude que costaría "medio mes". No solo he estado haciendo el juego así que digamos, otros 10-15 € de IA.
 
-En servidores por ahora he gastado 0. Estoy usando el mes gratuito de <https://railway.com/> para el servidor multijugador autoritativo. Lo mantendré vivo mientras haya gente jugando.
-Para el hosting web he usado Cloudflare, así que 0 €.
+En servidores por ahora he gastado 0. Estoy usando el mes gratuito de [Railway](https://railway.com/) para el servidor multijugador autoritativo. Lo mantendré vivo mientras haya gente jugando.
+Para el hosting web he usado [Cloudflare](https://www.cloudflare.com/), así que 0 €.
 
 En total 25 € redondeando por lo alto.
 
