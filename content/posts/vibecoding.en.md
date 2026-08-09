@@ -12,6 +12,16 @@ The game currently lets you play a few games of foosball from your browser using
 
 I have had a game like this in mind for a long time, and doing it the old-fashioned way would probably have taken me a year or two. Despite being entirely vibecoded, it is not a few days' work: an LLM does not know how the game is supposed to feel when you play it, and it cannot be your tester or designer.
 
+## Screenshots
+
+![Fuboh gameplay](/images/futboh-play.png)
+
+![Fuboh online modes](/images/futboh-online-modes.png)
+
+![Fuboh customization](/images/futboh-customize.png)
+
+![Fuboh scenario](/images/futboh-scenario.png)
+
 ## Details about Fuboh.com
 
 When I saw that the domain was available, I did not think about it for long: I'm making it.

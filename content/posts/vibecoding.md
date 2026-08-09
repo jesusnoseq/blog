@@ -12,6 +12,16 @@ Actualmente el juego permite echar unas partidas de futbolín con teclado (no re
 
 Hace tiempo que tenía un juego así en mente y hacerlo a la vieja usanza me habría llevado probablemente un año o dos. Pese a estar vibecodeado en su totalidad, no es un trabajo de días: un LLM no sabe cómo se tiene que sentir el juego al jugarlo, no te puede hacer de tester ni de diseñador.
 
+## Capturas
+
+![Partida de Fuboh](/images/futboh-play.png)
+
+![Modos online de Fuboh](/images/futboh-online-modes.png)
+
+![Personalización de Fuboh](/images/futboh-customize.png)
+
+![Escenario de Fuboh](/images/futboh-scenario.png)
+
 ## Detalles sobre Fuboh.com
 
 Cuando vi el dominio libre no me lo pensé mucho: lo hago.
